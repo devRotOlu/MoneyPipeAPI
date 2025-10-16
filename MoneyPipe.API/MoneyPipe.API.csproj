@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>1da7ce02-1199-41bf-9f3b-e9d11cd41119</UserSecretsId>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.4" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.7" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />
+	</ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MoneyPipe.Application\MoneyPipe.Application.csproj" />
+    <ProjectReference Include="..\MoneyPipe.Infrastructure\MoneyPipe.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>
