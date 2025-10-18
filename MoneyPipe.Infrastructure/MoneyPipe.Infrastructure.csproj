@@ -21,8 +21,4 @@
 	<EmbeddedResource Include="Database\Scripts\*.sql" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Database\Scripts\" />
-  </ItemGroup>
-
 </Project>

@@ -7,7 +7,7 @@ namespace MoneyPipe.Infrastructure.Repository
     public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
         protected readonly IDbConnection _dbConnection;
-        private readonly IDbTransaction _transaction;
+        protected readonly IDbTransaction _transaction;
 
         public GenericRepository(IDbConnection dbConnection, IDbTransaction transaction)
         {
@@ -31,7 +31,7 @@ namespace MoneyPipe.Infrastructure.Repository
             return await _dbConnection.GetAllAsync<T>();
         }
 
-        public async Task<T?> GetByIdAsync(int id)
+        public async Task<T?> GetByIdAsync(Guid id)
         {
             return await _dbConnection.GetAsync<T>(id);
         }

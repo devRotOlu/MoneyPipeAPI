@@ -1,0 +1,7 @@
+﻿CREATE TABLE Wallets (
+    Id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    UserId UUID NOT NULL REFERENCES Users(Id) ON DELETE CASCADE,
+    Currency VARCHAR(10) NOT NULL,
+    Balance DECIMAL(18,2) DEFAULT 0.00,
+    CreatedAt TIMESTAMP DEFAULT NOW()
+);

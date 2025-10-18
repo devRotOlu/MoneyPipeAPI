@@ -1,6 +1,9 @@
 ﻿using DbUp;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using MoneyPipe.Application.Interfaces;
+using MoneyPipe.Application.Interfaces.IRepository;
+using MoneyPipe.Infrastructure.Repository;
 using Npgsql;
 using System.Data;
 using System.Reflection;
@@ -15,8 +18,9 @@ namespace MoneyPipe.Infrastructure
             services.ConfigureDBContext(configuration);
             services.DeployDatabaseChanges(configuration);
 
-            //services.AddScoped<IUnitOfWork, UnitOfWork>();
-            //services.AddScoped<IMovieRepository, MovieRepository>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
             return services;
         }
