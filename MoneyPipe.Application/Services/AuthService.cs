@@ -1,25 +1,24 @@
 ﻿using MoneyPipe.Application.DTOs;
+using MoneyPipe.Application.Interfaces;
 using MoneyPipe.Application.Interfaces.IRepository;
 using MoneyPipe.Domain.Entities;
 
 namespace MoneyPipe.Application.Services
 {
-    public class AuthService
+    public class AuthService:IAuthService
     {
-        private readonly IUserRepository _users;
-        private readonly IRefreshTokenRepository _refreshRepo;
         private readonly TokenService _tokenService;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public AuthService(IUserRepository users, IRefreshTokenRepository refreshRepo, TokenService tokenService)
+        public AuthService(TokenService tokenService, IUnitOfWork unitOfWork)
         {
-            _users = users;
-            _refreshRepo = refreshRepo;
             _tokenService = tokenService;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task RegisterAsync(RegisterDto dto)
         {
-            var existing = await _users.GetByEmailAsync(dto.Email);
+            var existing = await _unitOfWork.Users.GetByEmailAsync(dto.Email);
             if (existing != null) throw new Exception("Email already registered");
 
             var hashed = BCrypt.Net.BCrypt.HashPassword(dto.Password);
@@ -30,12 +29,13 @@ namespace MoneyPipe.Application.Services
                 FirstName = dto.FirstName,
                 LastName = dto.LastName,
             };
-            await _users.AddAsync(user);
+            await _unitOfWork.Users.AddAsync(user);
+            _unitOfWork.CommitAsync();
         }
 
         public async Task<AuthResultTDO> LoginAsync(LoginDTO dto)
         {
-            var user = await _users.GetByEmailAsync(dto.Email);
+            var user = await _unitOfWork.Users.GetByEmailAsync(dto.Email);
             if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
                 throw new Exception("Invalid credentials");
 
@@ -48,7 +48,8 @@ namespace MoneyPipe.Application.Services
                 Token = refreshToken,
                 ExpiresAt = refreshExp
             };
-            await _refreshRepo.AddAsync(r);
+            await _unitOfWork.RefreshTokens.AddAsync(r);
+            _unitOfWork.CommitAsync();
 
             return new AuthResultTDO
             {
@@ -61,15 +62,15 @@ namespace MoneyPipe.Application.Services
 
         public async Task<AuthResultTDO> RefreshAsync(string refreshToken)
         {
-            var stored = await _refreshRepo.GetByTokenAsync(refreshToken);
+            var stored = await _unitOfWork.RefreshTokens.GetByTokenAsync(refreshToken);
             if (stored == null || stored.RevokedAt != null || stored.ExpiresAt <= DateTime.UtcNow)
                 throw new Exception("Invalid refresh token");
 
-            var user = await _users.GetByIdAsync(stored.UserId);
+            var user = await _unitOfWork.Users.GetByIdAsync(stored.UserId);
             if (user == null) throw new Exception("User not found");
 
             // rotate refresh token: revoke old, create new
-            await _refreshRepo.RevokeAsync(stored.Id);
+            await _unitOfWork.RefreshTokens.RevokeAsync(stored.Id);
 
             var (accessToken, accessExp) = _tokenService.CreateAccessToken(user);
             var (newRefresh, newRefreshExp) = _tokenService.CreateRefreshToken();
@@ -80,7 +81,8 @@ namespace MoneyPipe.Application.Services
                 Token = newRefresh,
                 ExpiresAt = newRefreshExp
             };
-            await _refreshRepo.AddAsync(newRt);
+            await _unitOfWork.RefreshTokens.AddAsync(newRt);
+            _unitOfWork.CommitAsync();
 
             return new AuthResultTDO
             {
@@ -93,8 +95,12 @@ namespace MoneyPipe.Application.Services
 
         public async Task LogoutAsync(string refreshToken)
         {
-            var stored = await _refreshRepo.GetByTokenAsync(refreshToken);
-            if (stored != null) await _refreshRepo.RevokeAsync(stored.Id);
+            var stored = await _unitOfWork.RefreshTokens.GetByTokenAsync(refreshToken);
+            if (stored != null)
+            {
+                await _unitOfWork.RefreshTokens.RevokeAsync(stored.Id);
+                _unitOfWork.CommitAsync();
+            }
         }
     }
 

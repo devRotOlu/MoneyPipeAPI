@@ -65,12 +65,12 @@ MoneyPipe follows **Clean Architecture**, ensuring separation of concerns and sc
 
 ### 🧩 Layers Overview
 
-| Layer              | Description                                                                 |
-| ------------------ | --------------------------------------------------------------------------- |
-| **Core**           | Domain models and business rules. Pure logic without dependencies.          |
-| **Application**    | Use cases, DTOs, and service contracts. Depends only on Core.               |
-| **Infrastructure** | Data access (EF Core, Dapper), external API integrations, and repositories. |
-| **API**            | Controllers, request validation, authentication, and route definitions.     |
+| Layer              | Description                                                             |
+| ------------------ | ----------------------------------------------------------------------- |
+| **Core**           | Domain models and business rules. Pure logic without dependencies.      |
+| **Application**    | Use cases, DTOs, and service contracts. Depends only on Core.           |
+| **Infrastructure** | Data access (Dapper), external API integrations, and repositories.      |
+| **API**            | Controllers, request validation, authentication, and route definitions. |
 
 ---
 

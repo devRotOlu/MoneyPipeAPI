@@ -1,27 +1,46 @@
-namespace MoneyPipe.API
+using MoneyPipe.API;
+using MoneyPipe.Application;
+using MoneyPipe.Infrastructure;
+
+var builder = WebApplication.CreateBuilder(args);
 {
-    public class Program
+    builder.Services
+        .AddInfrastructure(builder.Configuration)
+        .AddApplication(builder.Configuration);
+
+    var environment = builder.Environment;
+
+    builder.Services.AddControllers().AddNewtonsoftJson(op =>
     {
-        public static void Main(string[] args)
-        {
-            var builder = WebApplication.CreateBuilder(args);
+        op.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+        op.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
+    });
 
-            // Add services to the container.
+    builder.Services.AddAuthorization();
 
-            builder.Services.AddControllers();
+    if (environment.IsDevelopment()) builder.Services.ConfigureSwagger();
 
-            var app = builder.Build();
+    //builder.Services.ConfigureAuthentication(builder);
+}
 
-            // Configure the HTTP request pipeline.
+var app = builder.Build();
+{
 
-            app.UseHttpsRedirection();
-
-            app.UseAuthorization();
-
-
-            app.MapControllers();
-
-            app.Run();
-        }
+    //Configure the HTTP request pipeline.
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
     }
+
+    app.UseStaticFiles();
+
+    app.UseRouting();
+    app.UseHttpsRedirection();
+    app.UseAuthentication();
+    app.UseAuthorization();
+
+    app.MapControllers();
+
+    app.Run();
 }

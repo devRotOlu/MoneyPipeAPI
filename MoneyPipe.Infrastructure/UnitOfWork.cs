@@ -1,4 +1,6 @@
 ﻿using MoneyPipe.Application.Interfaces;
+using MoneyPipe.Application.Interfaces.IRepository;
+using MoneyPipe.Infrastructure.Repository;
 using System.Data;
 
 
@@ -7,15 +9,17 @@ namespace MoneyPipe.Infrastructure
     public class UnitOfWork : IUnitOfWork
     {
         private readonly IDbConnection _dbConnection;
-        //public IMovieRepository Movies { get; }
-
         private IDbTransaction _transaction;
+
+        public IUserRepository Users { get; set; }
+        public IRefreshTokenRepository RefreshTokens { get; set; }
 
         public UnitOfWork(IDbConnection dbConnection)
         {
             _dbConnection = dbConnection;
             _transaction = _dbConnection.BeginTransaction();
-            //Movies = new MovieRepository(_dbConnection, _transaction);
+            Users = new UserRepository(dbConnection,_transaction);
+            RefreshTokens = new RefreshTokenRepository(dbConnection,_transaction);
         }
 
         public void CommitAsync()
