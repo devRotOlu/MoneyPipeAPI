@@ -1,9 +1,9 @@
-﻿using Dapper.FluentMap;
-using DbUp;
+﻿using DbUp;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MoneyPipe.Application.Interfaces;
-using MoneyPipe.Domain.Entities;
+using MoneyPipe.Application.Interfaces.IServices;
+using MoneyPipe.Infrastructure.Services.EmailService;
 using Npgsql;
 using System.Data;
 using System.Reflection;
@@ -16,25 +16,10 @@ namespace MoneyPipe.Infrastructure
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, ConfigurationManager configuration)
         {
             services.ConfigureDBContext(configuration)
-                .DeployDatabaseChanges(configuration)
-                .MapEntities();
+                .DeployDatabaseChanges(configuration);
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-            return services;
-        }
-
-        private static IServiceCollection MapEntities(this IServiceCollection services)
-        {
-            FluentMapper.Initialize(config =>
-            {
-                config.AddMap(new EntityMapper<User>());
-                config.AddMap(new EntityMapper<Invoice>());
-                config.AddMap(new EntityMapper<Payment>());
-                config.AddMap(new EntityMapper<RefreshToken>());
-                config.AddMap(new EntityMapper<Transaction>());
-                config.AddMap(new EntityMapper<Wallet>());
-            });
+            services.AddScoped<IEmailService, EmailService>();
 
             return services;
         }

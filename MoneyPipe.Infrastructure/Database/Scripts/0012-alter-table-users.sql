@@ -1,0 +1,4 @@
+﻿ALTER TABLE Users
+ADD COLUMN EmailConfirmed BOOLEAN DEFAULT FALSE,
+ADD COLUMN EmailConfirmationToken TEXT NULL,
+ADD COLUMN EmailConfirmationExpiry TIMESTAMP NULL;

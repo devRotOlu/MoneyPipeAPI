@@ -1,4 +1,5 @@
 using MoneyPipe.API;
+using MoneyPipe.API.Middleware;
 using MoneyPipe.Application;
 using MoneyPipe.Infrastructure;
 
@@ -6,19 +7,8 @@ var builder = WebApplication.CreateBuilder(args);
 {
     builder.Services
         .AddInfrastructure(builder.Configuration)
-        .AddApplication(builder.Configuration);
-
-    var environment = builder.Environment;
-
-    builder.Services.AddControllers().AddNewtonsoftJson(op =>
-    {
-        op.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
-        op.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
-    });
-
-    builder.Services.AddAuthorization();
-
-    if (environment.IsDevelopment()) builder.Services.ConfigureSwagger();
+        .AddApplication(builder.Configuration)
+        .AddPresentation();
 
     //builder.Services.ConfigureAuthentication(builder);
 }
@@ -34,6 +24,11 @@ var app = builder.Build();
     }
 
     app.UseStaticFiles();
+
+    app.UseWhen(ctx => !ctx.Request.Path.StartsWithSegments("/health"), branch =>
+    {
+        branch.UseMiddleware<ErrorHandlingMiddleware>();
+    });
 
     app.UseRouting();
     app.UseHttpsRedirection();

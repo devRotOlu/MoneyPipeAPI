@@ -6,11 +6,19 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>1da7ce02-1199-41bf-9f3b-e9d11cd41119</UserSecretsId>
   </PropertyGroup>
+	
+	<ItemGroup>
+		<Content Include="EmailTemplate\**\*.html">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.4" />
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.7" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />
+		<PackageReference Include="AutoMapper" Version="13.0.1" />
 	</ItemGroup>
 
   <ItemGroup>

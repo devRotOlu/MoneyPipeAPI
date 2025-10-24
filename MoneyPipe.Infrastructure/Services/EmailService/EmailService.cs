@@ -11,64 +11,8 @@ namespace MoneyPipe.Infrastructure.Services.EmailService
         {
             _configuration = configuration;
         }
-        public async Task<(HttpResponseMessage response, string responseBody)> SendEmailForEmailConfirmation(UserEmailOptions userEmailOptions, bool isEmailConfirmPage)
-        {
-            userEmailOptions.Subject = "Confirmation of email Id";
 
-            var templateName = isEmailConfirmPage ? "EmailConfirmationPage" : "EmailTestPage";
-
-            userEmailOptions.Body = UpdatePlaceholders(GetEmailBody(templateName), userEmailOptions.PlaceHolders);
-
-            return await SendEmail(userEmailOptions);
-        }
-
-        private string GetEmailBody(string templateName)
-        {
-            const string templatePath = @"EmailTemplate/{0}.html";
-
-            // Get the full runtime path
-            var basePath = AppContext.BaseDirectory;
-
-            var fullPath = Path.Combine(basePath, string.Format(templatePath, templateName));
-
-            var body = File.ReadAllText(fullPath);
-
-            return body;
-        }
-
-        private string UpdatePlaceholders(string text, List<KeyValuePair<string, string>> keyValuePairs)
-        {
-            if (!string.IsNullOrEmpty(text) && keyValuePairs != null)
-            {
-                foreach (var placeholder in keyValuePairs)
-                {
-                    if (text.Contains(placeholder.Key))
-                    {
-                        text = text.Replace(placeholder.Key, placeholder.Value);
-                    }
-                }
-            }
-
-            return text;
-        }
-
-        public async Task SendEmailForPasswordReset(UserEmailOptions userEmailOptions, bool isResetPasswordPage)
-        {
-            userEmailOptions.Subject = "Reset your password";
-
-            var templateName = isResetPasswordPage ? "ForgetPasswordPage" : "ForgetPasswordTest";
-
-            userEmailOptions.Body = UpdatePlaceholders(GetEmailBody(templateName), userEmailOptions.PlaceHolders);
-
-            var (response, responseBody) = await SendEmail(userEmailOptions);
-
-            if (!response.IsSuccessStatusCode)
-            {
-
-            }
-        }
-
-        private async Task<(HttpResponseMessage response, string responseBody)> SendEmail(UserEmailOptions userEmailOptions)
+        public async Task<(HttpResponseMessage response, string responseBody)> SendEmail(UserEmailOptions userEmailOptions)
         {
             using var httpClient = new HttpClient();
 

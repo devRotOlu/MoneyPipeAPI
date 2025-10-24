@@ -11,5 +11,8 @@
         public string DefaultCurrency { get; set; } = "NGN";
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
+        public bool EmailConfirmed { get; set; }
+        public string EmailConfirmationToken { get; set; } = null!;
+        public DateTime EmailConfirmationExpiry { get; set; }
     }
 }
