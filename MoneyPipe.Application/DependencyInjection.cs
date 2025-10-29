@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MoneyPipe.Application.Interfaces;
+using MoneyPipe.Application.Interfaces.IServices;
 using MoneyPipe.Application.Services;
 
 namespace MoneyPipe.Application
@@ -11,6 +12,7 @@ namespace MoneyPipe.Application
         {
             services.AddScoped<TokenService>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IUserService, UserService>();
 
             return services;
         }

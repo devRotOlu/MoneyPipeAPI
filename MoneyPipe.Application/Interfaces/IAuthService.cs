@@ -10,7 +10,6 @@ namespace MoneyPipe.Application.Interfaces
         Task<ErrorOr<AuthResultDTO>> LoginAsync(LoginDTO dto);
         Task<ErrorOr<AuthResultDTO>> RefreshAsync(string refreshToken);
         Task LogoutAsync(string refreshToken);
-        Task GenerateEmailConfirmationTokenAsyn(User user, string memberFirstName, string? emailConfirmationLink = null);
         Task<(HttpResponseMessage response, string responseBody)> SendEmailForEmailConfirmation(User user, string token, string userName, string? emailConfirmationLink = null);
         Task SendEmailForPasswordReset(User user, string token, string memberFirstName, string? passwordResetLink = null);
     }

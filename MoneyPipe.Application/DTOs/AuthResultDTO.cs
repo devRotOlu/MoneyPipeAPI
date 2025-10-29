@@ -6,5 +6,7 @@
         public string RefreshToken { get; set; } = null!;
         public DateTime AccessTokenExpiresAt { get; set; }
         public DateTime RefreshTokenExpiresAt { get; set; }
+        public UserDetailsDTO User { get; set; } = null!;
+
     }
 }

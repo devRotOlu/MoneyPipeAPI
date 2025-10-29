@@ -1,4 +1,5 @@
-﻿using ErrorOr;
+﻿using AutoMapper;
+using ErrorOr;
 using Microsoft.Extensions.Configuration;
 using MoneyPipe.Application.DTOs;
 using MoneyPipe.Application.Interfaces;
@@ -15,13 +16,16 @@ namespace MoneyPipe.Application.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
+        private readonly IMapper _mapper;
+        
 
-        public AuthService(TokenService tokenService, IUnitOfWork unitOfWork, IEmailService emailService,IConfiguration configuration)
+        public AuthService(TokenService tokenService, IUnitOfWork unitOfWork, IEmailService emailService,IConfiguration configuration,IMapper mapper)
         {
             _tokenService = tokenService;
             _unitOfWork = unitOfWork;
             _emailService = emailService;
             _configuration = configuration;
+            _mapper = mapper;
         }
 
         public async Task<ErrorOr<Success>> RegisterAsync(RegisterDto dto)
@@ -30,13 +34,11 @@ namespace MoneyPipe.Application.Services
             if (existing != null) return Errors.User.DuplicateEmail;
 
             var hashed = BCrypt.Net.BCrypt.HashPassword(dto.Password);
-            var user = new User
-            {
-                Email = dto.Email,
-                PasswordHash = hashed,
-                FirstName = dto.FirstName,
-                LastName = dto.LastName,
-            };
+
+            var user = _mapper.Map<User>(dto);
+            user.PasswordHash = hashed;
+            user.EmailConfirmationToken = GenerateToken();
+            
             await _unitOfWork.Users.AddAsync(user);
             _unitOfWork.CommitAsync();
 
@@ -52,22 +54,29 @@ namespace MoneyPipe.Application.Services
             var (accessToken, accessExp) = _tokenService.CreateAccessToken(user);
             var (refreshToken, refreshExp) = _tokenService.CreateRefreshToken();
 
-            var r = new RefreshToken
+
+            var accessTokenObj = new RefreshToken
             {
                 UserId = user.Id,
                 Token = refreshToken,
                 ExpiresAt = refreshExp
             };
-            await _unitOfWork.RefreshTokens.AddAsync(r);
+            await _unitOfWork.RefreshTokens.AddAsync(accessTokenObj);
             _unitOfWork.CommitAsync();
 
-            return new AuthResultDTO
-            {
-                AccessToken = accessToken,
-                RefreshToken = refreshToken,
-                AccessTokenExpiresAt = accessExp,
-                RefreshTokenExpiresAt = refreshExp
-            };
+            var authResultDTO = MapToAuthResult(user, accessToken, accessExp, refreshToken, refreshExp);
+
+            return authResultDTO;
+        }
+
+        private AuthResultDTO MapToAuthResult(User user, string accessToken, DateTime accessExp, string refreshToken, DateTime refreshExp)
+        {
+            var authResultDTO = _mapper.Map<AuthResultDTO>(user);
+            authResultDTO.AccessToken = accessToken;
+            authResultDTO.RefreshToken = refreshToken;
+            authResultDTO.AccessTokenExpiresAt = accessExp;
+            authResultDTO.RefreshTokenExpiresAt = refreshExp;
+            return authResultDTO;
         }
 
         public async Task<ErrorOr<AuthResultDTO>> RefreshAsync(string refreshToken)
@@ -85,22 +94,19 @@ namespace MoneyPipe.Application.Services
             var (accessToken, accessExp) = _tokenService.CreateAccessToken(user);
             var (newRefresh, newRefreshExp) = _tokenService.CreateRefreshToken();
 
-            var newRt = new RefreshToken
+            var newRefreshObj = new RefreshToken
             {
                 UserId = user.Id,
                 Token = newRefresh,
                 ExpiresAt = newRefreshExp
             };
-            await _unitOfWork.RefreshTokens.AddAsync(newRt);
+            
+            await _unitOfWork.RefreshTokens.AddAsync(newRefreshObj);
             _unitOfWork.CommitAsync();
 
-            return new AuthResultDTO
-            {
-                AccessToken = accessToken,
-                RefreshToken = newRefresh,
-                AccessTokenExpiresAt = accessExp,
-                RefreshTokenExpiresAt = newRefreshExp
-            };
+            var authResultDTO = MapToAuthResult(user, accessToken, accessExp, newRefresh, newRefreshExp);
+
+            return authResultDTO;
         }
 
         public async Task LogoutAsync(string refreshToken)
@@ -113,12 +119,6 @@ namespace MoneyPipe.Application.Services
             }
         }
 
-        public async Task GenerateEmailConfirmationTokenAsyn(User user, string memberFirstName, string? emailConfirmationLink = null)
-        {
-            var token = GenerateToken();
-
-            await SendEmailForEmailConfirmation(user, token,memberFirstName, emailConfirmationLink);
-        }
 
         private string GenerateToken()
         {
@@ -208,7 +208,7 @@ namespace MoneyPipe.Application.Services
 
                 PlaceHolders = new List<KeyValuePair<string, string>>()
                 {
-                    new KeyValuePair<string, string>("{{UserName}}",userName),
+                    new("{{UserName}}",userName),
                     new KeyValuePair<string, string>("{{Link}}",string.Format(emailConfirmationLink + userId,user.Id.ToString(),token)),
                     new KeyValuePair<string, string>("{{AppName}}",appName!),
                     new KeyValuePair<string, string>("{{Token}}",token),
