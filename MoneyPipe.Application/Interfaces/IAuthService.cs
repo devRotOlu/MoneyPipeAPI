@@ -12,5 +12,6 @@ namespace MoneyPipe.Application.Interfaces
         Task LogoutAsync(string refreshToken);
         Task<(HttpResponseMessage response, string responseBody)> SendEmailForEmailConfirmation(User user, string token, string userName, string? emailConfirmationLink = null);
         Task SendEmailForPasswordReset(User user, string token, string memberFirstName, string? passwordResetLink = null);
+        Task<ErrorOr<Success>> ConfirmEmail(string userId,string token);
     }
 }

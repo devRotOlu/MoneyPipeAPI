@@ -246,6 +246,27 @@ namespace MoneyPipe.Application.Services
 
             return (options, isResetPasswordPage);
         }
+
+        public async Task<ErrorOr<Success>> ConfirmEmail(string userId,string token)
+        {
+            var isUserId = Guid.TryParse(userId, out var _userId);
+
+            var user = new User();
+
+            if (isUserId) user = await _unitOfWork.Users.GetByIdAsync(_userId);
+
+            if (!isUserId || user is null) return Errors.User.NotFound;
+            if (user.EmailConfirmationExpiry?.CompareTo(DateTime.UtcNow) < 0) return Errors.EmailConfirmation.TokenExpired;
+            if (user.EmailConfirmationToken?.CompareTo(token) != 0) return Errors.EmailConfirmation.TokenMismatch;
+            if (user.EmailConfirmed) return Errors.EmailConfirmation.AlreadyConfirmed;
+
+            user.EmailConfirmed = true;
+            user.EmailConfirmationExpiry = null;
+            user.EmailConfirmationToken = null;
+
+            return Result.Success;
+            
+        }
     }
 
 }

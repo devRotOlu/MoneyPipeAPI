@@ -77,5 +77,15 @@ namespace MoneyPipe.API.Controllers
             await _auth.LogoutAsync(dto.RefreshToken);
             return Ok(ApiResponse<object>.Ok("Logged out Successfully!"));
         }
+
+        [HttpPost("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail([FromQuery] string userId,[FromQuery]string token)
+        {
+            ErrorOr<Success> authResult = await _auth.ConfirmEmail(userId, token);
+            return authResult.Match(
+                success => Ok(ApiResponse<object>.Ok("Email Confirmed")),
+                errors => Problem(errors)
+            );
+        }
     }
 }

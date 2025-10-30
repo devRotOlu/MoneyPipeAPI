@@ -2,10 +2,13 @@
     Id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     Email VARCHAR(255) NOT NULL UNIQUE,
     PasswordHash TEXT NOT NULL,
-    FirtName VARCHAR(255) NOT NULL,
+    FirstName VARCHAR(255) NOT NULL,
     LastName VARCHAR(255) NOT NULL,
-    Role VARCHAR(20) DEFAULT 'User',
+    Role VARCHAR(20) DEFAULT 'User' CHECK (Role IN ('User', 'Admin')),
     DefaultCurrency VARCHAR(10) DEFAULT 'NGN',
     CreatedAt TIMESTAMP DEFAULT NOW(),
-    UpdatedAt TIMESTAMP DEFAULT NOW()
+    UpdatedAt TIMESTAMP DEFAULT NOW(),
+    EmailConfirmed boolean DEFAULT false NOT NULL,
+    EmailConfirmationToken TEXT,
+    EmailConfirmationExpiry TIMESTAMP,
 );

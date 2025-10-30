@@ -1,2 +1,0 @@
-﻿ALTER TABLE Users
-RENAME COLUMN FirtName TO FirstName;
