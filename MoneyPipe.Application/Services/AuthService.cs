@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using ErrorOr;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using MoneyPipe.Application.DTOs;
 using MoneyPipe.Application.Interfaces;
@@ -40,49 +41,41 @@ namespace MoneyPipe.Application.Services
             user.EmailConfirmationToken = GenerateToken();
             
             await _unitOfWork.Users.AddAsync(user);
-            _unitOfWork.CommitAsync();
+            _unitOfWork.Commit();
 
             return Result.Success;
         }
 
-        public async Task<ErrorOr<AuthResultDTO>> LoginAsync(LoginDTO dto)
+        public async Task<ErrorOr<UserDetailsDTO>> LoginAsync(LoginDTO dto,HttpContext httpContext)
         {
             var user = await _unitOfWork.Users.GetByEmailAsync(dto.Email);
             if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
                 return Errors.Authentication.InvalidCredentials;
 
-            var (accessToken, accessExp) = _tokenService.CreateAccessToken(user);
-            var (refreshToken, refreshExp) = _tokenService.CreateRefreshToken();
-
+            if (!user.EmailConfirmed) return Errors.EmailConfirmation.UnConfirmed;
+            
+            var (refreshToken,refreshTokenExpirationTime) = _tokenService.SetTokenInCookies(user,httpContext);
 
             var accessTokenObj = new RefreshToken
             {
                 UserId = user.Id,
                 Token = refreshToken,
-                ExpiresAt = refreshExp
+                ExpiresAt = refreshTokenExpirationTime
             };
             await _unitOfWork.RefreshTokens.AddAsync(accessTokenObj);
-            _unitOfWork.CommitAsync();
+            _unitOfWork.Commit();
 
-            var authResultDTO = MapToAuthResult(user, accessToken, accessExp, refreshToken, refreshExp);
+            var userDetails = _mapper.Map<UserDetailsDTO>(user);
 
-            return authResultDTO;
+            return userDetails;
         }
 
-        private AuthResultDTO MapToAuthResult(User user, string accessToken, DateTime accessExp, string refreshToken, DateTime refreshExp)
+        public async Task<ErrorOr<UserDetailsDTO>> RefreshAsync(HttpContext context)
         {
-            var authResultDTO = _mapper.Map<AuthResultDTO>(user);
-            authResultDTO.AccessToken = accessToken;
-            authResultDTO.RefreshToken = refreshToken;
-            authResultDTO.AccessTokenExpiresAt = accessExp;
-            authResultDTO.RefreshTokenExpiresAt = refreshExp;
-            return authResultDTO;
-        }
+            var oldRefreshToken = _tokenService.RetrieveOldRefreshToken(context);
+            var stored = await _unitOfWork.RefreshTokens.GetByTokenAsync(oldRefreshToken);
 
-        public async Task<ErrorOr<AuthResultDTO>> RefreshAsync(string refreshToken)
-        {
-            var stored = await _unitOfWork.RefreshTokens.GetByTokenAsync(refreshToken);
-            if (stored == null || stored.RevokedAt != null || stored.ExpiresAt <= DateTime.UtcNow)
+            if (stored == null || stored.RevokedAt != null || stored.ExpiresAt.CompareTo(DateTime.UtcNow) <= 0)
                 return Errors.RefreshToken.InvalidToken;
 
             var user = await _unitOfWork.Users.GetByIdAsync(stored.UserId);
@@ -91,32 +84,30 @@ namespace MoneyPipe.Application.Services
             // rotate refresh token: revoke old, create new
             await _unitOfWork.RefreshTokens.RevokeAsync(stored.Id);
 
-            var (accessToken, accessExp) = _tokenService.CreateAccessToken(user);
-            var (newRefresh, newRefreshExp) = _tokenService.CreateRefreshToken();
+            var (newRefreshToken,refreshTokenExpirationTime) = _tokenService.SetTokenInCookies(user,context);
 
             var newRefreshObj = new RefreshToken
             {
                 UserId = user.Id,
-                Token = newRefresh,
-                ExpiresAt = newRefreshExp
+                Token = newRefreshToken,
+                ExpiresAt = refreshTokenExpirationTime
             };
             
             await _unitOfWork.RefreshTokens.AddAsync(newRefreshObj);
-            _unitOfWork.CommitAsync();
+            _unitOfWork.Commit();
 
-            var authResultDTO = MapToAuthResult(user, accessToken, accessExp, newRefresh, newRefreshExp);
+            var userDetails = _mapper.Map<UserDetailsDTO>(user);
 
-            return authResultDTO;
+            return userDetails;
         }
 
-        public async Task LogoutAsync(string refreshToken)
+        public async Task LogoutAsync(HttpContext context)
         {
-            var stored = await _unitOfWork.RefreshTokens.GetByTokenAsync(refreshToken);
-            if (stored != null)
-            {
-                await _unitOfWork.RefreshTokens.RevokeAsync(stored.Id);
-                _unitOfWork.CommitAsync();
-            }
+            _tokenService.InvalidateTokenInCookies(context);
+            var invalidRefreshToken = _tokenService.RetrieveOldRefreshToken(context);
+            var stored = await _unitOfWork.RefreshTokens.GetByTokenAsync(invalidRefreshToken);
+            await _unitOfWork.RefreshTokens.RevokeAsync(stored!.Id);
+            _unitOfWork.Commit();
         }
 
 
@@ -133,7 +124,7 @@ namespace MoneyPipe.Application.Services
             return token;
         }
 
-        public async Task<(HttpResponseMessage response, string responseBody)> SendEmailForEmailConfirmation(User user, string token, string userName, string? emailConfirmationLink = null)
+        public async Task<(HttpResponseMessage response, string responseBody)> SendEmailForEmailConfirmationAsync(User user, string token, string userName, string? emailConfirmationLink = null)
         {
             var (userEmailOptions,isEmailConfirmPage) = BuildEmailConfirmationEmail(user, token, userName, emailConfirmationLink);
 
@@ -176,9 +167,36 @@ namespace MoneyPipe.Application.Services
             return text;
         }
 
-        public async Task SendEmailForPasswordReset(User user, string token, string memberFirstName, string? passwordResetLink = null)
+        private async Task<ErrorOr<(string token,User user)>> GenerateTokenForPasswordReset(string email)
         {
-            var (userEmailOptions, isResetPasswordPage) = BuildForgotPasswordEmail(user,token,memberFirstName,passwordResetLink);
+            var user = await _unitOfWork.Users.GetByEmailAsync(email);
+
+            if (user is null) return Errors.User.NotFound;
+
+            var token = GenerateToken();
+
+            var resetToken = new PasswordResetToken
+            {
+                UserId = user.Id,
+                Token = token!,
+                ExpiresAt = DateTime.UtcNow.AddHours(1)
+            };
+
+            await _unitOfWork.PasswordRestTokens.AddAsync(resetToken);
+            _unitOfWork.Commit();
+
+            return (token,user);
+        }
+
+        public async Task<ErrorOr<Success>> SendEmailForPasswordResetAsync(string email,string? passwordResetLink = null)
+        {
+            var tokenResult = await GenerateTokenForPasswordReset(email);
+
+            if (tokenResult.IsError) return tokenResult.Errors;
+
+            var (token,user) = tokenResult.Value;
+
+            var (userEmailOptions, isResetPasswordPage) = BuildForgotPasswordEmail(user,token,user.FirstName,passwordResetLink);
 
             userEmailOptions.Subject = "Reset your password";
 
@@ -192,6 +210,8 @@ namespace MoneyPipe.Application.Services
             {
 
             }
+
+            return Result.Success;
         }
 
         private (UserEmailOptions options,bool isEmailConfirmPage) BuildEmailConfirmationEmail(User user, string token, string userName, string? emailConfirmationLink = null)
@@ -223,7 +243,7 @@ namespace MoneyPipe.Application.Services
 
         private (UserEmailOptions options,bool isResetPasswordPage) BuildForgotPasswordEmail(User user, string token, string memberFirstName, string? passwordResetLink = null)
         {
-            string userId = "?id={0}&token={1}";
+            string userIdToken = "?id={0}&token={1}";
 
             UserEmailOptions options = new UserEmailOptions
             {
@@ -232,10 +252,11 @@ namespace MoneyPipe.Application.Services
                     user.Email!
                 },
 
+
                 PlaceHolders = new List<KeyValuePair<string, string>>()
                 {
                     new KeyValuePair<string, string>("{{UserName}}",memberFirstName),
-                    new KeyValuePair<string, string>("{{Link}}",string.Format(passwordResetLink+ userId,user.Id.ToString(),token)),
+                    new KeyValuePair<string, string>("{{Link}}",string.Format(passwordResetLink+ userIdToken,user.Id.ToString(),token)),
                     new KeyValuePair<string, string>("{{Token}}",token),
                     new KeyValuePair<string, string>("{{UserID}}",user.Id.ToString()),
                 }
@@ -247,7 +268,7 @@ namespace MoneyPipe.Application.Services
             return (options, isResetPasswordPage);
         }
 
-        public async Task<ErrorOr<Success>> ConfirmEmail(string userId,string token)
+        public async Task<ErrorOr<Success>> ConfirmEmailAsync(string userId,string token)
         {
             var isUserId = Guid.TryParse(userId, out var _userId);
 
@@ -264,8 +285,32 @@ namespace MoneyPipe.Application.Services
             user.EmailConfirmationExpiry = null;
             user.EmailConfirmationToken = null;
 
+            await _unitOfWork.Users.UpdateAsync(user);
+            _unitOfWork.Commit();
+
             return Result.Success;
             
+        }
+
+        public async Task<ErrorOr<Success>> ResetPasswordAsync(PasswordResetDTO dto)
+        {
+            var isUserId = Guid.TryParse(dto.UserId, out var userId);
+            User? user = new();
+            if (isUserId) user = await _unitOfWork.Users.GetByIdAsync(userId);
+            if (!isUserId || user is null) return Errors.User.NotFound;
+
+            var tokenObj = await _unitOfWork.PasswordRestTokens.GetByTokenAndUserIdAsync(dto.Token, userId);
+            if (tokenObj is null) return Errors.PasswordResetToken.InvalidToken;
+
+            if (tokenObj.ExpiresAt < DateTime.UtcNow || tokenObj.IsUsed)
+                return Errors.PasswordResetToken.Expired;
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+            await _unitOfWork.Users.UpdateAsync(user);
+            await _unitOfWork.PasswordRestTokens.MarkAsUsedAsync(userId);
+            _unitOfWork.Commit();
+
+            return Result.Success;
         }
     }
 

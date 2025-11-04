@@ -8,7 +8,7 @@
     DefaultCurrency VARCHAR(10) DEFAULT 'NGN',
     CreatedAt TIMESTAMP DEFAULT NOW(),
     UpdatedAt TIMESTAMP DEFAULT NOW(),
-    EmailConfirmed boolean DEFAULT false NOT NULL,
-    EmailConfirmationToken TEXT,
-    EmailConfirmationExpiry TIMESTAMP,
+    EmailConfirmed boolean DEFAULT FALSE NOT NULL,
+    EmailConfirmationToken TEXT NULL,
+    EmailConfirmationExpiry TIMESTAMP NULL
 );

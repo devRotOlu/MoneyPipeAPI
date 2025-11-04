@@ -6,7 +6,8 @@ namespace MoneyPipe.Application.Interfaces
     {
         IUserRepository Users { get; set; }
         IRefreshTokenRepository RefreshTokens { get; set; }
-        void CommitAsync();
-        void RollbackAsync();
+        IPasswordResetRepository PasswordRestTokens { get; set; }
+        void Commit();
+        void Rollback();
     }
 }

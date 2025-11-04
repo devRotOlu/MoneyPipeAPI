@@ -7,7 +7,7 @@ namespace MoneyPipe.Application.DTOs
         [Required, DataType(DataType.EmailAddress, ErrorMessage = "Invalid email.")]
         public string Email { get; init; } = null!;
 
-        [Required, DataType(DataType.Password), StringLength(15, ErrorMessage = "Your password is longer than required")]
+        [Required, DataType(DataType.Password)]
         public string Password { get; init; } = null!;
     }
 }

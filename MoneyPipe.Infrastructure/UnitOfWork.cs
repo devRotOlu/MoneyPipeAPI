@@ -13,22 +13,24 @@ namespace MoneyPipe.Infrastructure
 
         public IUserRepository Users { get; set; }
         public IRefreshTokenRepository RefreshTokens { get; set; }
+        public IPasswordResetRepository PasswordRestTokens { get; set ; }
 
         public UnitOfWork(IDbConnection dbConnection)
         {
             _dbConnection = dbConnection;
             _transaction = _dbConnection.BeginTransaction();
             Users = new UserRepository(dbConnection,_transaction);
-            RefreshTokens = new RefreshTokenRepository(dbConnection,_transaction);
+            RefreshTokens = new RefreshTokenRepository(dbConnection, _transaction);
+            PasswordRestTokens = new PasswordResetRepository(dbConnection, _transaction);
         }
 
-        public void CommitAsync()
+        public void Commit()
         {
             _transaction.Commit();
             _dbConnection.Close();
         }
 
-        public void RollbackAsync()
+        public void Rollback()
         {
             _transaction.Rollback();
             _dbConnection.Close();

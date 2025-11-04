@@ -1,4 +1,5 @@
 ﻿using ErrorOr;
+using Microsoft.AspNetCore.Http;
 using MoneyPipe.Application.DTOs;
 using MoneyPipe.Domain.Entities;
 
@@ -7,11 +8,12 @@ namespace MoneyPipe.Application.Interfaces
     public interface IAuthService
     {
         Task<ErrorOr<Success>> RegisterAsync(RegisterDto dto);
-        Task<ErrorOr<AuthResultDTO>> LoginAsync(LoginDTO dto);
-        Task<ErrorOr<AuthResultDTO>> RefreshAsync(string refreshToken);
-        Task LogoutAsync(string refreshToken);
-        Task<(HttpResponseMessage response, string responseBody)> SendEmailForEmailConfirmation(User user, string token, string userName, string? emailConfirmationLink = null);
-        Task SendEmailForPasswordReset(User user, string token, string memberFirstName, string? passwordResetLink = null);
-        Task<ErrorOr<Success>> ConfirmEmail(string userId,string token);
+        Task<ErrorOr<UserDetailsDTO>> LoginAsync(LoginDTO dto,HttpContext httpContext);
+        Task<ErrorOr<UserDetailsDTO>> RefreshAsync(HttpContext context);
+        Task LogoutAsync(HttpContext context);
+        Task<(HttpResponseMessage response, string responseBody)> SendEmailForEmailConfirmationAsync(User user, string token, string userName, string? emailConfirmationLink = null);
+        Task<ErrorOr<Success>> SendEmailForPasswordResetAsync(string email,string? passwordResetLink = null);
+        Task<ErrorOr<Success>> ConfirmEmailAsync(string userId, string token);
+        Task<ErrorOr<Success>> ResetPasswordAsync(PasswordResetDTO dto);
     }
 }
