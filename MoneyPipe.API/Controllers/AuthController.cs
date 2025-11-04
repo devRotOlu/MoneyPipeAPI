@@ -44,7 +44,7 @@ namespace MoneyPipe.API.Controllers
 
                 var user = userResult.Value;
 
-                await _auth.SendEmailForEmailConfirmation(user, user.FirstName, clientURL!);
+                await _auth.SendEmailForEmailConfirmationAsync(user, user.EmailConfirmationToken!,user.FirstName, clientURL!);
             }
             catch { };
 
@@ -54,38 +54,63 @@ namespace MoneyPipe.API.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDTO dto)
         {
-            ErrorOr<AuthResultDTO> authResult = await _auth.LoginAsync(dto);
+            ErrorOr<UserDetailsDTO> authResult = await _auth.LoginAsync(dto,HttpContext);
             return authResult.Match(
-                result => Ok(ApiResponse<AuthResultDTO>.Ok(result, "Logged in Successfully.")),
+                result => Ok(ApiResponse<UserDetailsDTO>.Ok(result, "Logged in Successfully.")),
                 errors => Problem(errors)
             );
         }
 
         [HttpPost("refresh")]
-        public async Task<IActionResult> Refresh(RefreshRequestDTO dto)
+        public async Task<IActionResult> Refresh()
         {
-            ErrorOr<AuthResultDTO> authResult = await _auth.RefreshAsync(dto.RefreshToken);
+            ErrorOr<UserDetailsDTO> authResult = await _auth.RefreshAsync(HttpContext);
             return authResult.Match(
-                result => Ok(ApiResponse<AuthResultDTO>.Ok(result)),
+                result => Ok(ApiResponse<UserDetailsDTO>.Ok(result)),
                 errors => Problem(errors)
             );
         }
 
+        [Authorize]
         [HttpPost("logout")]
-        public async Task<IActionResult> Logout(RefreshRequestDTO dto)
+        public async Task<IActionResult> Logout()
         {
-            await _auth.LogoutAsync(dto.RefreshToken);
-            return Ok(ApiResponse<object>.Ok("Logged out Successfully!"));
+            await _auth.LogoutAsync(HttpContext);
+            return Ok(ApiResponse<object>.Ok(null,"Logged out Successfully!"));
         }
 
         [HttpPost("confirm-email")]
-        public async Task<IActionResult> ConfirmEmail([FromQuery] string userId,[FromQuery]string token)
+        public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, [FromQuery] string token)
         {
-            ErrorOr<Success> authResult = await _auth.ConfirmEmail(userId, token);
+            ErrorOr<Success> authResult = await _auth.ConfirmEmailAsync(userId, token);
             return authResult.Match(
-                success => Ok(ApiResponse<object>.Ok("Email Confirmed")),
+                success => Ok(ApiResponse<object>.Ok(null,"Email Confirmed")),
                 errors => Problem(errors)
             );
         }
+
+        [HttpPost("request-password-reset")]
+        public async Task<IActionResult> RequestPasswordReset([FromQuery] string email)
+        {
+            var clientURL = Request.GetClientURL(_configuration["PasswordResetRoute"]!);
+
+            ErrorOr<Success> emailResult = await _auth.SendEmailForPasswordResetAsync(email, clientURL);
+
+            return emailResult.Match(
+                success => Ok(ApiResponse<object>.Ok(null,"Password reset link sent if email exists.")),
+                errors => Problem(errors)
+            );
+        }
+
+        [HttpPost("password-reset")]
+        public async Task<IActionResult> PasswordReset(PasswordResetDTO dto)
+        {
+            ErrorOr<Success> resetResult = await _auth.ResetPasswordAsync(dto);
+
+            return resetResult.Match(
+                success => Ok(ApiResponse<object>.Ok(null,"Password reset successful.")),
+                errors => Problem(errors)
+            );
+        }      
     }
 }

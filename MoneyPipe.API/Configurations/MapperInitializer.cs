@@ -11,8 +11,6 @@ namespace MoneyPipe.API.Configurations
             CreateMap<RegisterDto, User>();
             CreateMap<User, UserDetailsDTO>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id.ToString()));
-            CreateMap<User, AuthResultDTO>()
-                .ForMember(dest => dest.User, opt => opt.MapFrom(src => src));
         }
-    }
+    } 
 }
