@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using MoneyPipe.Application.Interfaces.IServices;
+using MoneyPipe.Application.Models;
 
 namespace MoneyPipe.Infrastructure.Services.EmailService
 {

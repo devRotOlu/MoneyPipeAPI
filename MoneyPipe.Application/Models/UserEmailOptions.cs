@@ -1,4 +1,4 @@
-﻿namespace MoneyPipe.Application.Interfaces.IServices
+﻿namespace MoneyPipe.Application.Models
 {
     public record UserEmailOptions
     {

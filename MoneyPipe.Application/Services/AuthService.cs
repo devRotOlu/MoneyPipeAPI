@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using MoneyPipe.Application.DTOs;
 using MoneyPipe.Application.Interfaces;
 using MoneyPipe.Application.Interfaces.IServices;
+using MoneyPipe.Application.Models;
 using MoneyPipe.Domain.Common.Errors;
 using MoneyPipe.Domain.Entities;
 using System.Security.Cryptography;
@@ -13,14 +14,14 @@ namespace MoneyPipe.Application.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly TokenService _tokenService;
+        private readonly ITokenService _tokenService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
         
 
-        public AuthService(TokenService tokenService, IUnitOfWork unitOfWork, IEmailService emailService,IConfiguration configuration,IMapper mapper)
+        public AuthService(ITokenService tokenService, IUnitOfWork unitOfWork, IEmailService emailService,IConfiguration configuration,IMapper mapper)
         {
             _tokenService = tokenService;
             _unitOfWork = unitOfWork;
@@ -56,13 +57,13 @@ namespace MoneyPipe.Application.Services
             
             var (refreshToken,refreshTokenExpirationTime) = _tokenService.SetTokenInCookies(user,httpContext);
 
-            var accessTokenObj = new RefreshToken
+            var refreshTokenObj = new RefreshToken
             {
                 UserId = user.Id,
                 Token = refreshToken,
                 ExpiresAt = refreshTokenExpirationTime
             };
-            await _unitOfWork.RefreshTokens.AddAsync(accessTokenObj);
+            await _unitOfWork.RefreshTokens.AddAsync(refreshTokenObj);
             _unitOfWork.Commit();
 
             var userDetails = _mapper.Map<UserDetailsDTO>(user);
@@ -70,7 +71,7 @@ namespace MoneyPipe.Application.Services
             return userDetails;
         }
 
-        public async Task<ErrorOr<UserDetailsDTO>> RefreshAsync(HttpContext context)
+        public async Task<ErrorOr<UserDetailsDTO>> RefreshTokenAsync(HttpContext context)
         {
             var oldRefreshToken = _tokenService.RetrieveOldRefreshToken(context);
             var stored = await _unitOfWork.RefreshTokens.GetByTokenAsync(oldRefreshToken);
@@ -79,16 +80,16 @@ namespace MoneyPipe.Application.Services
                 return Errors.RefreshToken.InvalidToken;
 
             var user = await _unitOfWork.Users.GetByIdAsync(stored.UserId);
-            if (user == null) return Errors.User.NotFound;
+            // if (user == null) return Errors.User.NotFound;
 
             // rotate refresh token: revoke old, create new
             await _unitOfWork.RefreshTokens.RevokeAsync(stored.Id);
 
-            var (newRefreshToken,refreshTokenExpirationTime) = _tokenService.SetTokenInCookies(user,context);
+            var (newRefreshToken,refreshTokenExpirationTime) = _tokenService.SetTokenInCookies(user!,context);
 
             var newRefreshObj = new RefreshToken
             {
-                UserId = user.Id,
+                UserId = user!.Id,
                 Token = newRefreshToken,
                 ExpiresAt = refreshTokenExpirationTime
             };

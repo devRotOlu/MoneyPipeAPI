@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using MoneyPipe.Application.Common;
+using MoneyPipe.Application.Interfaces.IServices;
 using MoneyPipe.Domain.Entities;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -11,7 +12,7 @@ using System.Text;
 
 namespace MoneyPipe.Application.Services
 {
-    public class TokenService
+    public class TokenService:ITokenService
     {
         private readonly IConfiguration _config;
         public TokenService(IConfiguration config) { _config = config; }

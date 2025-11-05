@@ -1,4 +1,6 @@
-﻿namespace MoneyPipe.Application.Interfaces.IServices
+﻿using MoneyPipe.Application.Models;
+
+namespace MoneyPipe.Application.Interfaces.IServices
 {
     public interface IEmailService
     {

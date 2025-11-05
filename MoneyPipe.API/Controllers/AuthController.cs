@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using MoneyPipe.API.Common.Http;
 using MoneyPipe.API.Helpers;
 using MoneyPipe.Application.DTOs;
-using MoneyPipe.Application.Interfaces;
 using MoneyPipe.Application.Interfaces.IServices;
 using MoneyPipe.Domain.Entities;
 
@@ -64,7 +63,7 @@ namespace MoneyPipe.API.Controllers
         [HttpPost("refresh")]
         public async Task<IActionResult> Refresh()
         {
-            ErrorOr<UserDetailsDTO> authResult = await _auth.RefreshAsync(HttpContext);
+            ErrorOr<UserDetailsDTO> authResult = await _auth.RefreshTokenAsync(HttpContext);
             return authResult.Match(
                 result => Ok(ApiResponse<UserDetailsDTO>.Ok(result)),
                 errors => Problem(errors)
