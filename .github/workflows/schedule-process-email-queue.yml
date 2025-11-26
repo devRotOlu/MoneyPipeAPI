@@ -1,0 +1,24 @@
+name: Schedule process-email-queue
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'   # every 5 minutes
+  workflow_dispatch:        # manual trigger for testing
+
+jobs:
+  call-function:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Supabase Edge Function
+        env:
+          SERVICE_ROLE_KEY: ${{ secrets.SERVICE_ROLE_KEY }}
+        run: |
+          set -euo pipefail
+          echo "Calling process-email-queue at $(date --utc)"
+          response=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
+            -X POST \
+            -H "Authorization: Bearer $SERVICE_ROLE_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://kasvheeatavjrlcizint.functions.supabase.co/process-email-queue")
+          echo "$response"
