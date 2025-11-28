@@ -20,5 +20,5 @@ jobs:
             -H "Authorization: Bearer $SERVICE_ROLE_KEY" \
             -H "Content-Type: application/json" \
             -d '{}' \
-            "https://kasvheeatavjrlcizint.functions.supabase.co/process-email-queue")
+            "https://dljxbqfedgyozovinwtm.functions.supabase.co/process-email-queue")
           echo "$response"
