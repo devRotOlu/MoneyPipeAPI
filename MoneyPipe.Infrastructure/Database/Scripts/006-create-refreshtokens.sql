@@ -1,8 +1,0 @@
-﻿CREATE TABLE RefreshTokens (
-    Id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    UserId UUID NOT NULL REFERENCES Users(Id) ON DELETE CASCADE,
-    Token TEXT NOT NULL,
-    ExpiresAt TIMESTAMP NOT NULL,
-    CreatedAt TIMESTAMP DEFAULT NOW(),
-    RevokedAt TIMESTAMP NULL
-);

@@ -1,0 +1,8 @@
+CREATE TABLE PasswordResetTokens (
+    Id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    UserId UUID NOT NULL REFERENCES Users(Id) ON DELETE CASCADE,
+    Token TEXT NOT NULL,
+    ExpiresAt TIMESTAMPTZ NOT NULL,
+    IsUsed BOOLEAN NOT NULL,
+    CreatedAt TIMESTAMPTZ NOT NULL
+);

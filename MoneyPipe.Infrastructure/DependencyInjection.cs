@@ -1,9 +1,12 @@
-﻿using DbUp;
+﻿using Dapper;
+using DbUp;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MoneyPipe.Application.Interfaces;
-using MoneyPipe.Application.Interfaces.IServices;
-using MoneyPipe.Infrastructure.Services.EmailService;
+using MoneyPipe.Application.Interfaces.Persistence.Reads;
+using MoneyPipe.Infrastructure.Persistence;
+using MoneyPipe.Infrastructure.Persistence.Configurations.IdTypeHandlers;
+using MoneyPipe.Infrastructure.Persistence.Repositories.Reads;
 using Npgsql;
 using System.Data;
 using System.Reflection;
@@ -19,7 +22,8 @@ namespace MoneyPipe.Infrastructure
                 .DeployDatabaseChanges(configuration);
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
-            services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<IUserReadRepository,UserReadRepository>();
+            services.RegisterAllEntityIdTypeHandlers();
 
             return services;
         }
@@ -35,7 +39,7 @@ namespace MoneyPipe.Infrastructure
                 return connection;
             });
 
-            services.AddScoped<IDbTransaction>(sp =>
+            services.AddScoped(sp =>
             {
                 var connection = sp.GetRequiredService<IDbConnection>();
                 return connection.BeginTransaction();
@@ -57,6 +61,48 @@ namespace MoneyPipe.Infrastructure
             if (!result.Successful)
             {
 
+            }
+
+            return services;
+        }
+
+        public static IServiceCollection RegisterAllEntityIdTypeHandlers(this IServiceCollection services)
+        {
+            // Find all non-abstract types that inherit from EntityIdTypeHandler<,>
+            var handlerTypes = Assembly.GetExecutingAssembly().GetTypes()
+                .Where(t => !t.IsAbstract &&
+                            t.BaseType != null &&
+                            t.BaseType.IsGenericType &&
+                            t.BaseType.GetGenericTypeDefinition() == typeof(EntityIdTypeHandler<,>))
+                .ToList();
+
+            // Find the generic AddTypeHandler<T>(ITypeHandler) method once
+            var addHandlerMethod = typeof(SqlMapper)
+                .GetMethods(BindingFlags.Public | BindingFlags.Static)
+                .FirstOrDefault(m =>
+                    m.Name == nameof(SqlMapper.AddTypeHandler) &&
+                    m.IsGenericMethod &&
+                    m.GetParameters().Length == 1 &&
+                    typeof(SqlMapper.ITypeHandler).IsAssignableFrom(m.GetParameters()[0].ParameterType));
+
+            if (addHandlerMethod == null)
+                throw new InvalidOperationException("Could not find SqlMapper.AddTypeHandler<T>(ITypeHandler) method. Check Dapper version.");
+
+            foreach (var type in handlerTypes)
+            {
+                // Create an instance of the handler
+                var handlerInstance = Activator.CreateInstance(type);
+                if (handlerInstance == null)
+                    throw new InvalidOperationException($"Could not create instance of {type.FullName}. Ensure it has a public parameterless constructor.");
+
+                // Get the strong type (first generic argument)
+                var strongType = type.BaseType!.GetGenericArguments()[0];
+
+                // Make the generic AddTypeHandler<T> method for this strong type
+                var genericMethod = addHandlerMethod.MakeGenericMethod(strongType);
+
+                // Register the handler with Dapper
+                genericMethod.Invoke(null, new object[] { handlerInstance });
             }
 
             return services;

@@ -53,9 +53,8 @@ namespace MoneyPipe.API.Common.Errors
                 problemDetails.Extensions["traceId"] = traceId;
             }
 
-            var errors = httpContext?.Items[HttpContextItemKeys.Errors] as IList<Error>;
 
-            if (errors != null)
+            if (httpContext?.Items[HttpContextItemKeys.Errors] is IList<Error> errors)
             {
                 problemDetails.Extensions.Add("errorCodes", errors.Select(error => error.Code));
             }

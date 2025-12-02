@@ -12,5 +12,6 @@
         public string Gateway { get; set; } = "Paystack";
         public string? RawResponse { get; set; }
         public DateTime CreatedAt { get; set; }
+        
     }
 }

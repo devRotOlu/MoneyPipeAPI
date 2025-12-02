@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using MoneyPipe.Application.Common;
 using MoneyPipe.Application.Interfaces.IServices;
-using MoneyPipe.Domain.Entities;
+using MoneyPipe.Domain.UserAggregate;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -12,10 +12,9 @@ using System.Text;
 
 namespace MoneyPipe.Application.Services
 {
-    public class TokenService:ITokenService
+    public class TokenService(IConfiguration config) : ITokenService
     {
-        private readonly IConfiguration _config;
-        public TokenService(IConfiguration config) { _config = config; }
+        private readonly IConfiguration _config = config;
 
         private (string accessToken, DateTime accessExp) CreateAccessToken(User user)
         {
@@ -25,10 +24,10 @@ namespace MoneyPipe.Application.Services
             var expires = DateTime.UtcNow.AddMinutes(15);
 
             var claims = new List<Claim> {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Role, user.Role)
-        };
+                new(ClaimTypes.NameIdentifier, user.Id.Value.ToString()),
+                new(ClaimTypes.Email, user.Email),
+                new(ClaimTypes.Role,"User")
+            };
 
             var token = new JwtSecurityToken(
                 issuer: _config["Jwt:Issuer"],
@@ -41,19 +40,17 @@ namespace MoneyPipe.Application.Services
             return (new JwtSecurityTokenHandler().WriteToken(token), expires);
         }
 
-        private (string refreshToken, DateTime refreshExp) CreateRefreshToken()
+        public string GetRefreshToken()
         {
             // create secure random token (use RNG)
             var randomBytes = new byte[64];
             using var rng = RandomNumberGenerator.Create();
             rng.GetBytes(randomBytes);
             var token = Convert.ToBase64String(randomBytes);
-            // var expires = DateTime.UtcNow.AddHours(int.Parse(_config["Jwt:RefreshTokenHours"]!));
-            var expires = DateTime.UtcNow.AddHours(1);
-            return (token, expires);
+            return token;
         }
 
-         private CookieOptions GetAccessTokenCookieOption()
+         private static CookieOptions GetAccessTokenCookieOption()
         {
             return new CookieOptions
             {
@@ -64,7 +61,7 @@ namespace MoneyPipe.Application.Services
             };
         }
 
-        private CookieOptions GetRefreshTokenCookieOption()
+        private static CookieOptions GetRefreshTokenCookieOption()
         {
             return new CookieOptions
             {
@@ -73,10 +70,10 @@ namespace MoneyPipe.Application.Services
             };
         }
 
-        public (string refreshToken, DateTime refreshTokenExpirationTime) SetTokenInCookies(User user, HttpContext context)
+        public void SetTokenInCookies(User user,string refreshToken,DateTime refreshTokenExpirationTime,
+         HttpContext context)
         {
             var (accessToken, accessTokenExpirationTime) = CreateAccessToken(user);
-            var (refreshToken, refreshTokenExpirationTime) = CreateRefreshToken();
 
             var accessTokenOption = GetAccessTokenCookieOption();
             accessTokenOption.Expires = accessTokenExpirationTime;
@@ -87,8 +84,6 @@ namespace MoneyPipe.Application.Services
             refreshTokenOption.Expires = refreshTokenExpirationTime;
 
             context.Response.Cookies.Append(Token.RefreshToken, refreshToken, refreshTokenOption);
-
-            return (refreshToken,refreshTokenExpirationTime);
         }
 
         public void InvalidateTokenInCookies(HttpContext context)
@@ -102,8 +97,25 @@ namespace MoneyPipe.Application.Services
             refreshTokenOption.Expires = DateTime.UtcNow.AddMinutes(-5);
             context.Response.Cookies.Append(Token.RefreshToken, "", refreshTokenOption);
         }
+
+        private static string GenerateToken()
+        {
+            using var rng = RandomNumberGenerator.Create();
+            var bytes = new byte[32];
+            rng.GetBytes(bytes);
+            var token = Convert.ToBase64String(bytes)
+                .Replace("+", "-")
+                .Replace("/", "_")
+                .TrimEnd('=');
+
+            return token;
+        }
         
         public string RetrieveOldRefreshToken(HttpContext context) => context.Request.Cookies[Token.RefreshToken];
+
+        public string GeneratePasswordResetToken() => GenerateToken();
+
+        public string GenerateEmailConfirmationToken() => GenerateToken();
     }
 
 }

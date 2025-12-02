@@ -1,6 +1,5 @@
-using System.Text.Json;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using MoneyPipe.API;
+using MoneyPipe.API.Common.Http;
 using MoneyPipe.API.Middleware;
 using MoneyPipe.Application;
 using MoneyPipe.Infrastructure;
@@ -10,9 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
     builder.Services
         .AddInfrastructure(builder.Configuration)
         .AddApplication(builder.Configuration)
-        .AddPresentation(builder.Configuration);
-
-    //builder.Services.ConfigureAuthentication(builder);
+        .AddPresentation(builder.Configuration,builder.Environment);
 }
 
 var app = builder.Build();
@@ -33,6 +30,7 @@ var app = builder.Build();
     });
 
     app.UseRouting();
+    app.UseCors(CORSPolicy.Policy);
     app.UseHttpsRedirection();
     app.UseAuthentication();
     app.UseAuthorization();

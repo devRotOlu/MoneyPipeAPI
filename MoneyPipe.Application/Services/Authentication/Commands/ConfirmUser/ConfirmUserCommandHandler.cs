@@ -1,0 +1,42 @@
+using ErrorOr;
+using MediatR;
+using MoneyPipe.Application.Interfaces;
+using MoneyPipe.Application.Interfaces.Persistence.Reads;
+using MoneyPipe.Domain.Common.Errors;
+using MoneyPipe.Domain.UserAggregate;
+
+namespace MoneyPipe.Application.Services.Authentication.Commands.ConfirmUser
+{
+    public class ConfirmUserCommandHandler : IRequestHandler<ConfirmUserCommand, ErrorOr<Success>>
+    {
+        public ConfirmUserCommandHandler(IUnitOfWork unitofWork,IUserReadRepository userQuery)
+        {
+            _unitofWork = unitofWork;
+            _userQuery = userQuery;
+        }
+
+        private readonly IUnitOfWork _unitofWork;
+        private readonly IUserReadRepository _userQuery;
+
+        public async Task<ErrorOr<Success>> Handle(ConfirmUserCommand request, CancellationToken cancellationToken)
+        {
+            var isUserId = Guid.TryParse(request.UserId,out var userId) ;
+
+            User? user = null;
+
+            if (isUserId) user = await _userQuery.GetUserByIdAsync(userId);
+
+            if (!isUserId || user is null) return Errors.User.NotFound;
+            if (user.EmailConfirmationExpiry?.CompareTo(DateTime.UtcNow) < 0) return Errors.EmailConfirmation.TokenExpired;
+            if (user.EmailConfirmationToken?.CompareTo(request.Token) != 0) return Errors.EmailConfirmation.TokenMismatch;
+            if (user.EmailConfirmed) return Errors.EmailConfirmation.AlreadyConfirmed;
+
+            user.MarkEmailConfirmed();
+
+            await _unitofWork.Users.MarkConfirmedEmail(user);
+            _unitofWork.Commit();
+
+            return Result.Success;
+        }
+    }
+}

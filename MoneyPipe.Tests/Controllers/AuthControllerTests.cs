@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using MoneyPipe.API.Controllers;
-using MoneyPipe.Application.DTOs;
 using MoneyPipe.Application.Interfaces.IServices;
 using MoneyPipe.Domain.Entities;
 using ErrorOr;
@@ -11,6 +10,7 @@ using MoneyPipe.API.Common.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using MoneyPipe.Tests.Helpers;
+using MoneyPipe.API.DTOs;
 
 namespace MoneyPipe.Tests.Controllers
 {

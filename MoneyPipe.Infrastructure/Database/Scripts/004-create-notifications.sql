@@ -1,0 +1,10 @@
+CREATE TABLE Notifications (
+    Id UUID PRIMARY KEY,
+    UserId UUID NOT NULL REFERENCES users(Id),
+    Type VARCHAR(128) NOT NULL,
+    Message TEXT NOT NULL,
+    MetadataJson JSONB NULL,
+    CreatedAt TIMESTAMPTZ NOT NULL,
+    ReadAt TIMESTAMPTZ NULL,
+    IsRead BOOLEAN NOT NULL
+);

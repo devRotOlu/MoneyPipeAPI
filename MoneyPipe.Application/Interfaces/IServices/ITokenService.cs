@@ -1,12 +1,17 @@
 using Microsoft.AspNetCore.Http;
-using MoneyPipe.Domain.Entities;
+using MoneyPipe.Domain.UserAggregate;
+
 
 namespace MoneyPipe.Application.Interfaces.IServices
 {
     public interface ITokenService
     {
-        (string refreshToken, DateTime refreshTokenExpirationTime) SetTokenInCookies(User user, HttpContext context);
+        void SetTokenInCookies(User user,string refreshToken,DateTime refreshTokenExpirationTime,
+         HttpContext context);
         void InvalidateTokenInCookies(HttpContext context);
         string RetrieveOldRefreshToken(HttpContext context);
+        string GeneratePasswordResetToken();
+        string GenerateEmailConfirmationToken();
+        string GetRefreshToken();
     }
 }

@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MoneyPipe.API.Common.Errors;
@@ -14,15 +13,12 @@ namespace MoneyPipe.API
 {
     public static class ServiceExtension
     {
-        public static IServiceCollection AddPresentation(this IServiceCollection services,ConfigurationManager configuration)
+        public static IServiceCollection AddPresentation(this IServiceCollection services,ConfigurationManager configuration,IHostEnvironment env)
         {
-            using var serviceProvider = services.BuildServiceProvider();
-            
-            var env = serviceProvider.GetRequiredService<IHostEnvironment>();
-            
+          
             configuration.SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("MoneyPipe.API/appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile($"MoneyPipe.API/appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true)
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true)
                 .AddEnvironmentVariables();
                 
             services.AddSingleton<ProblemDetailsFactory, MoneyPipeProblemDetailsFactory>();
@@ -37,7 +33,20 @@ namespace MoneyPipe.API
 
             services.AddAuthorization();
 
+            services.ConfigureAuthentication(configuration);
+
             services.ConfigureInvalidModelStateResponse();
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy(CORSPolicy.Policy, policy =>
+                {
+                    policy.WithOrigins()
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials();;
+                });
+            });
 
             if (env.IsDevelopment()) services.ConfigureSwagger();
 
@@ -67,22 +76,22 @@ namespace MoneyPipe.API
 
         }
 
-        public static void ConfigureAuthentication(this IServiceCollection services, WebApplicationBuilder builder)
+        public static void ConfigureAuthentication(this IServiceCollection services, ConfigurationManager configuration)
         {
-            var _ = new System.IdentityModel.Tokens.Jwt.JwtSecurityToken();
+            //var _ = new System.IdentityModel.Tokens.Jwt.JwtSecurityToken();
 
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
-                  .AddCookie(options =>
-                    {
-                        options.Cookie.Name = Token.AccessToken;
-                    })
+                //   .AddCookie(options =>
+                //     {
+                //         options.Cookie.Name = Token.AccessToken;
+                //     })
                .AddJwtBearer(options =>
                {
-                   var jwtSettings = builder.Configuration.GetSection("Jwt");
+                   var jwtSettings = configuration.GetSection("Jwt");
                    var key = jwtSettings.GetSection("key").Value;
                    options.IncludeErrorDetails = true;
                    options.RequireHttpsMetadata = true;
@@ -92,9 +101,9 @@ namespace MoneyPipe.API
                    {
                        ValidateIssuer = true,
                        ValidateAudience = true,
-                       ValidAudience = jwtSettings.GetSection("Issuer").Value,
+                       ValidIssuer = jwtSettings.GetSection("Issuer").Value,
                        ValidateLifetime = true,
-                       ValidIssuer = jwtSettings.GetSection("Audience").Value,
+                       ValidAudience = jwtSettings.GetSection("Audience").Value,
                        ValidateIssuerSigningKey = true,
                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key!)),
                        RequireExpirationTime = true,
@@ -147,7 +156,7 @@ namespace MoneyPipe.API
                      }
                 });
 
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "MyShopAPI", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "MoneyPipeAPI", Version = "v1" });
             });
         }
     }

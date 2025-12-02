@@ -1,14 +1,13 @@
 ﻿CREATE TABLE Users (
-    Id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    Id UUID PRIMARY KEY,
     Email VARCHAR(255) NOT NULL UNIQUE,
     PasswordHash TEXT NOT NULL,
     FirstName VARCHAR(255) NOT NULL,
     LastName VARCHAR(255) NOT NULL,
-    Role VARCHAR(20) DEFAULT 'User' CHECK (Role IN ('User', 'Admin')),
-    DefaultCurrency VARCHAR(10) DEFAULT 'NGN',
-    CreatedAt TIMESTAMP DEFAULT NOW(),
-    UpdatedAt TIMESTAMP DEFAULT NOW(),
+    DefaultCurrency VARCHAR(10) NOT NULL,
+    CreatedAt TIMESTAMPTZ NOT NULL,
+    UpdatedAt TIMESTAMPTZ DEFAULT NOW(),
     EmailConfirmed boolean DEFAULT FALSE NOT NULL,
     EmailConfirmationToken TEXT NULL,
-    EmailConfirmationExpiry TIMESTAMP NULL
+    EmailConfirmationExpiry TIMESTAMPTZ NULL
 );

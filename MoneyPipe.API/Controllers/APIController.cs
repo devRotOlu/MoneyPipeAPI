@@ -12,7 +12,7 @@ namespace MoneyPipe.API.Controllers
     [Authorize]
     public class APIController : ControllerBase
     {
-        protected IActionResult Problem(List<ErrorOr.Error> errors)
+        protected IActionResult Problem(List<Error> errors)
         {
             if (errors.Count == 0)
             {
@@ -37,7 +37,7 @@ namespace MoneyPipe.API.Controllers
             return Problem(firstError);
         }
 
-        private IActionResult Problem(ErrorOr.Error firstError)
+        private IActionResult Problem(Error firstError)
         {
             var statusCode = firstError.Type switch
             {
@@ -57,7 +57,7 @@ namespace MoneyPipe.API.Controllers
             return WrapProblem(problemDetails);
         }
 
-        private IActionResult ValidationProblem(List<ErrorOr.Error> errors)
+        private IActionResult ValidationProblem(List<Error> errors)
         {
             var modelStateDict = new ModelStateDictionary();
 

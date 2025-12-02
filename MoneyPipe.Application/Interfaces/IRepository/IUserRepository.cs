@@ -1,4 +1,6 @@
-﻿using MoneyPipe.Domain.Entities;
+﻿
+
+using MoneyPipe.Domain.UserAggregate;
 
 namespace MoneyPipe.Application.Interfaces.IRepository
 {

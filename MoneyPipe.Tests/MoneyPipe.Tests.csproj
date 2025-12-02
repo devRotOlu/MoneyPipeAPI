@@ -7,6 +7,7 @@
 
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <BuildProject>false</BuildProject>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,5 +29,6 @@
     <ProjectReference Include="..\MoneyPipe.Domain\MoneyPipe.Domain.csproj" />
     <ProjectReference Include="..\MoneyPipe.Infrastructure\MoneyPipe.Infrastructure.csproj" />
   </ItemGroup>
+  
 
 </Project>

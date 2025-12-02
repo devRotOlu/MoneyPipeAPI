@@ -1,72 +1,72 @@
-﻿using ErrorOr;
+﻿using AutoMapper;
+using ErrorOr;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MoneyPipe.API.Common.Http;
-using MoneyPipe.API.Helpers;
-using MoneyPipe.Application.DTOs;
-using MoneyPipe.Application.Interfaces.IServices;
-using MoneyPipe.Domain.Entities;
+using MoneyPipe.API.DTOs;
+using MoneyPipe.Application.Services.Authentication.Commands.ConfirmUser;
+using MoneyPipe.Application.Services.Authentication.Commands.Login;
+using MoneyPipe.Application.Services.Authentication.Commands.Logout;
+using MoneyPipe.Application.Services.Authentication.Commands.PasswordReset;
+using MoneyPipe.Application.Services.Authentication.Commands.RefreshToken;
+using MoneyPipe.Application.Services.Authentication.Commands.Register;
+using MoneyPipe.Application.Services.Authentication.Commands.RequestPasswordReset;
+using MoneyPipe.Application.Services.Authentication.Common;
 
 namespace MoneyPipe.API.Controllers
 {
     [Route("api/[controller]")]
-    [AllowAnonymous]
-    public class AuthController : APIController
+    public class AuthController(ISender mediatr,IMapper mapper) 
+    : APIController
     {
-        private readonly IAuthService _auth;
-        private readonly IConfiguration _configuration;
-        private readonly IUserService _userService;
-    
-        public AuthController(IAuthService auth, IConfiguration configuration,IUserService userService)
-        {
-            _auth = auth;
-            _configuration = configuration;
-            _userService = userService;
-        }
+        private readonly ISender _mediatr = mediatr;
+        private readonly IMapper _mapper = mapper;
 
+        [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterDto dto)
         {
+            var command = _mapper.Map<RegisterCommand>(dto);
 
-            ErrorOr<Success> authResult = await _auth.RegisterAsync(dto);
+            ErrorOr<Success> authResult = await _mediatr.Send(command);
 
-            if (authResult.IsError)
-            {
-                return Problem(authResult.Errors);
-            }
-
-            try
-            {
-                var clientURL = Request.GetClientURL(_configuration["EmailConfirmation"]!);
-
-                ErrorOr<User> userResult = await _userService.GetByEmailAsync(dto.Email);
-
-                var user = userResult.Value;
-
-                await _auth.SendEmailForEmailConfirmationAsync(user, user.EmailConfirmationToken!,user.FirstName, clientURL!);
-            }
-            catch { };
+            if (authResult.IsError) return Problem(authResult.Errors);
 
             return Ok(ApiResponse<object>.Ok(null,"Registration Successful"));
         }
-
+        
+        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDTO dto)
         {
-            ErrorOr<UserDetailsDTO> authResult = await _auth.LoginAsync(dto,HttpContext);
+            var command = _mapper.Map<LoginCommand>(dto);
+
+            ErrorOr<AuthenticationResult> authResult = await _mediatr.Send(command);
+
             return authResult.Match(
-                result => Ok(ApiResponse<UserDetailsDTO>.Ok(result, "Logged in Successfully.")),
-                errors => Problem(errors)
+                result =>
+                {
+                    var userDetails = _mapper.Map<UserDetailsDTO>(result);
+                    return Ok(ApiResponse<UserDetailsDTO>.Ok(userDetails, "Logged in Successfully."));
+                },
+                Problem
             );
         }
 
+        [AllowAnonymous]
         [HttpPost("refresh")]
         public async Task<IActionResult> Refresh()
         {
-            ErrorOr<UserDetailsDTO> authResult = await _auth.RefreshTokenAsync(HttpContext);
+            var command = new RefreshTokenCommand();
+            ErrorOr<AuthenticationResult> authResult = await _mediatr.Send(command);
             return authResult.Match(
-                result => Ok(ApiResponse<UserDetailsDTO>.Ok(result)),
-                errors => Problem(errors)
+                result =>
+                {
+                    var userDetails = _mapper.Map<UserDetailsDTO>(result);
+                    return Ok(ApiResponse<UserDetailsDTO>.Ok(userDetails));
+                },
+                Problem
             );
         }
 
@@ -74,41 +74,46 @@ namespace MoneyPipe.API.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
-            await _auth.LogoutAsync(HttpContext);
+            var command = new LogoutCommand();
+            await _mediatr.Send(command);
             return Ok(ApiResponse<object>.Ok(null,"Logged out Successfully!"));
         }
 
+        [AllowAnonymous]
         [HttpPost("confirm-email")]
         public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, [FromQuery] string token)
         {
-            ErrorOr<Success> authResult = await _auth.ConfirmEmailAsync(userId, token);
+            var command = new ConfirmUserCommand(userId,token);
+            var authResult = await _mediatr.Send(command);
             return authResult.Match(
                 success => Ok(ApiResponse<object>.Ok(null,"Email Confirmed")),
-                errors => Problem(errors)
+                Problem
             );
         }
 
+        [AllowAnonymous]
         [HttpPost("request-password-reset")]
         public async Task<IActionResult> RequestPasswordReset([FromQuery] string email)
         {
-            var clientURL = Request.GetClientURL(_configuration["PasswordResetRoute"]!);
+            var command = new RequestPasswordResetCommand(email);
+            ErrorOr<Success> authResult = await _mediatr.Send(command);
 
-            ErrorOr<Success> emailResult = await _auth.SendEmailForPasswordResetAsync(email, clientURL);
-
-            return emailResult.Match(
+            return authResult.Match(
                 success => Ok(ApiResponse<object>.Ok(null,"Password reset link sent if email exists.")),
-                errors => Problem(errors)
+                Problem
             );
         }
 
+        [AllowAnonymous]
         [HttpPost("password-reset")]
         public async Task<IActionResult> PasswordReset(PasswordResetDTO dto)
         {
-            ErrorOr<Success> resetResult = await _auth.ResetPasswordAsync(dto);
+            var command = _mapper.Map<PasswordResetCommand>(dto);
+            ErrorOr<Success> resetResult = await _mediatr.Send(command);
 
             return resetResult.Match(
                 success => Ok(ApiResponse<object>.Ok(null,"Password reset successful.")),
-                errors => Problem(errors)
+                Problem
             );
         }      
     }

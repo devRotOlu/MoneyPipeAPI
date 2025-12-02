@@ -6,10 +6,11 @@ using AutoMapper;
 using MoneyPipe.Application.Services;
 using MoneyPipe.Application.Interfaces;
 using MoneyPipe.Application.Interfaces.IServices;
-using MoneyPipe.Application.DTOs;
 using MoneyPipe.Domain.Entities;
 using MoneyPipe.Domain.Common.Errors;
 using MoneyPipe.Application.Interfaces.IRepository;
+using MoneyPipe.Application.Models;
+using MoneyPipe.API.DTOs;
 
 namespace MoneyPipe.Tests.Services
 {
@@ -242,7 +243,7 @@ namespace MoneyPipe.Tests.Services
             result.IsError.Should().BeTrue();
             result.FirstError.Should().Be(Errors.RefreshToken.InvalidToken);
         }
-        
+
 
         [Fact]
         public async Task RefreshTokenAsync_ShouldReturnUserDetails_WhenSuccessful()
@@ -270,10 +271,47 @@ namespace MoneyPipe.Tests.Services
 
             _mockUnitOfWork.Verify(u => u.RefreshTokens.AddAsync(It.IsAny<RefreshToken>()), Times.Once);
             _mockUnitOfWork.Verify(u => u.RefreshTokens.RevokeAsync(oldToken.Id), Times.Once);
-             _mockUnitOfWork.Verify(u => u.Commit(), Times.Once);
+            _mockUnitOfWork.Verify(u => u.Commit(), Times.Once);
 
         }
         
+        [Fact]
+        public async Task SendEmailForEmailConfirmationAsync_ShouldSendEmail_AndReturnResponse()
+        {
+            // Arrange
+            var user = new User
+            {
+                Email = "test@example.com",
+                FirstName = "Test"
+            };
+            var token = "fake-token";
+            var userName = "Test User";
+            var emailConfirmationLink = "https://example.com/confirm";
+
+            // Mock response from email service
+            var fakeHttpResponse = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+            var fakeResponseBody = "Email Sent Successfully";
+
+            _mockEmailService
+                .Setup(s => s.SendEmail(It.IsAny<UserEmailOptions>()))
+                .ReturnsAsync((fakeHttpResponse, fakeResponseBody));
+
+
+            // Act
+            var (response, responseBody) = await _authService.SendEmailForEmailConfirmationAsync(
+                user,
+                token,
+                userName,
+                emailConfirmationLink
+            );
+
+            // Assert
+            Assert.Equal(fakeHttpResponse, response);
+            Assert.Equal(fakeResponseBody, responseBody);
+
+            _mockEmailService.Verify(s => s.SendEmail(It.IsAny<UserEmailOptions>()), Times.Once);
+        }
+
         private DefaultHttpContext CreateHttpContextWithCookie(string token)
         {
             var context = new DefaultHttpContext();
