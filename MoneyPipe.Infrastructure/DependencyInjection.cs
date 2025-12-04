@@ -23,6 +23,8 @@ namespace MoneyPipe.Infrastructure
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IUserReadRepository,UserReadRepository>();
+            services.AddScoped<IInvoiceReadRepository,InvoiceReadRepository>();
+
             services.RegisterAllEntityIdTypeHandlers();
 
             return services;
@@ -30,7 +32,7 @@ namespace MoneyPipe.Infrastructure
 
         private static IServiceCollection ConfigureDBContext(this IServiceCollection services, ConfigurationManager configuration)
         {
-            Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
+            DefaultTypeMap.MatchNamesWithUnderscores = true;
 
             services.AddScoped<IDbConnection>(sp =>
             {
@@ -83,17 +85,11 @@ namespace MoneyPipe.Infrastructure
                     m.Name == nameof(SqlMapper.AddTypeHandler) &&
                     m.IsGenericMethod &&
                     m.GetParameters().Length == 1 &&
-                    typeof(SqlMapper.ITypeHandler).IsAssignableFrom(m.GetParameters()[0].ParameterType));
-
-            if (addHandlerMethod == null)
-                throw new InvalidOperationException("Could not find SqlMapper.AddTypeHandler<T>(ITypeHandler) method. Check Dapper version.");
-
+                    typeof(SqlMapper.ITypeHandler).IsAssignableFrom(m.GetParameters()[0].ParameterType)) ?? throw new InvalidOperationException("Could not find SqlMapper.AddTypeHandler<T>(ITypeHandler) method. Check Dapper version.");
             foreach (var type in handlerTypes)
             {
                 // Create an instance of the handler
-                var handlerInstance = Activator.CreateInstance(type);
-                if (handlerInstance == null)
-                    throw new InvalidOperationException($"Could not create instance of {type.FullName}. Ensure it has a public parameterless constructor.");
+                var handlerInstance = Activator.CreateInstance(type) ?? throw new InvalidOperationException($"Could not create instance of {type.FullName}. Ensure it has a public parameterless constructor.");
 
                 // Get the strong type (first generic argument)
                 var strongType = type.BaseType!.GetGenericArguments()[0];
@@ -102,7 +98,7 @@ namespace MoneyPipe.Infrastructure
                 var genericMethod = addHandlerMethod.MakeGenericMethod(strongType);
 
                 // Register the handler with Dapper
-                genericMethod.Invoke(null, new object[] { handlerInstance });
+                genericMethod.Invoke(null, [handlerInstance]);
             }
 
             return services;

@@ -7,16 +7,10 @@ using MoneyPipe.Domain.UserAggregate;
 
 namespace MoneyPipe.Application.Services.Authentication.Commands.ConfirmUser
 {
-    public class ConfirmUserCommandHandler : IRequestHandler<ConfirmUserCommand, ErrorOr<Success>>
+    public class ConfirmUserCommandHandler(IUnitOfWork unitofWork, IUserReadRepository userQuery) : IRequestHandler<ConfirmUserCommand, ErrorOr<Success>>
     {
-        public ConfirmUserCommandHandler(IUnitOfWork unitofWork,IUserReadRepository userQuery)
-        {
-            _unitofWork = unitofWork;
-            _userQuery = userQuery;
-        }
-
-        private readonly IUnitOfWork _unitofWork;
-        private readonly IUserReadRepository _userQuery;
+        private readonly IUnitOfWork _unitofWork = unitofWork;
+        private readonly IUserReadRepository _userQuery = userQuery;
 
         public async Task<ErrorOr<Success>> Handle(ConfirmUserCommand request, CancellationToken cancellationToken)
         {

@@ -1,6 +1,6 @@
-namespace MoneyPipe.Domain.Models
+namespace MoneyPipe.Domain.InvoiceAggregate.Models
 {
-    public record InvoiceItemRequest
+    public record InvoiceItemData
     {
         public string Description { get; set; } = null!;
         public int? Quantity { get; set; }

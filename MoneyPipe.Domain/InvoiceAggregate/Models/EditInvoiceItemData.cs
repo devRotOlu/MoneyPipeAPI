@@ -1,6 +1,6 @@
-namespace MoneyPipe.Domain.Models
+namespace MoneyPipe.Domain.InvoiceAggregate.Models
 {
-    public record EditInvoiceItemRequest:InvoiceItemRequest
+    public record EditInvoiceItemData:InvoiceItemData
     {
         public Guid Id { get; set; }
 

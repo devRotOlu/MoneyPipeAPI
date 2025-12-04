@@ -1,6 +1,10 @@
+using ErrorOr;
+using MoneyPipe.Domain.Common.Errors;
 using MoneyPipe.Domain.Common.Models;
 using MoneyPipe.Domain.InvoiceAggregate.Entities;
+using MoneyPipe.Domain.InvoiceAggregate.Models;
 using MoneyPipe.Domain.InvoiceAggregate.ValueObjects;
+using MoneyPipe.Domain.UserAggregate.ValueObjects;
 
 namespace MoneyPipe.Domain.InvoiceAggregate
 {
@@ -8,7 +12,7 @@ namespace MoneyPipe.Domain.InvoiceAggregate
     {
         private const decimal TaxRate = 0.10m;
         private readonly List<InvoiceItem> _invoiceItems = [];
-        public Guid UserId { get; private set; }
+        public UserId UserId { get; private set; }
         public string InvoiceNumber { get; private set;} = null!;
         public decimal? SubTotal { get; private set; }
         public decimal? TaxAmount { get; private set; }
@@ -22,7 +26,155 @@ namespace MoneyPipe.Domain.InvoiceAggregate
         public string CustomerEmail { get; private set; } = null!;
         public string? CustomerAddress { get; private set; } 
         public string? Notes { get; private set; }
-        public string? PaymentUrl { get; set; }
-        public IReadOnlyCollection<InvoiceItem> InvoiceItems => _invoiceItems.AsReadOnly();    
+        public string? PaymentUrl { get; private set; }
+        public IReadOnlyCollection<InvoiceItem> InvoiceItems => _invoiceItems.AsReadOnly(); 
+
+        private Invoice(){}
+
+        private Invoice(InvoiceId id):base(id)
+        {
+            
+        }
+
+        public static ErrorOr<Invoice> Create(InvoiceData data)
+        {
+            var invoice = new Invoice(InvoiceId.CreateUnique(Guid.NewGuid()));
+
+            var errors = new List<Error>();
+
+            if (string.IsNullOrWhiteSpace(data.CustomerEmail)) errors.Add(Errors.Invoice.InvalidCustomerEmail);
+
+             if (data.InvoiceItems == null || !data.InvoiceItems.Any())
+            {
+                errors.Add(Errors.Invoice.InvoiceItemError);
+                return errors;
+            }
+
+            foreach (var itemdata in data.InvoiceItems)
+            {
+                ErrorOr<Success> itemResult = invoice.AddInvoiceItem(itemdata);
+
+                if (itemResult.IsError)
+                {
+                    errors.AddRange(itemResult.Errors);
+                    return errors;
+                }
+            }
+
+
+            if (errors.Count > 0)
+                return errors;
+
+            MapDataToInvoice(invoice, data);
+
+            return invoice;
+        }
+
+        public static ErrorOr<Invoice> Edit(EditInvoiceData data)
+        { 
+            var errors = new List<Error>();
+
+            if (Guid.Empty == data.Id) errors.Add(Errors.Invoice.IdRequired);
+
+            if (string.IsNullOrWhiteSpace(data.CustomerEmail)) errors.Add(Errors.Invoice.InvalidCustomerEmail);
+
+            var invoice = new Invoice(InvoiceId.CreateUnique(data.Id));
+
+            if (data.InvoiceItems == null || !data.InvoiceItems.Any())
+            {
+                errors.Add(Errors.Invoice.InvoiceItemError);
+                return errors;
+            }
+
+            foreach (var item in data.InvoiceItems)
+            {
+                // determine if it's newly added item or just edited based on its id
+                ErrorOr<InvoiceItem> itemResult;
+                if (Guid.Empty == item.Id) itemResult = InvoiceItem.Create(item);
+                else itemResult = InvoiceItem.Edit(item);
+                if (itemResult.IsError)
+                {
+                    errors.AddRange(itemResult.Errors);
+                    return errors;
+                }
+            }
+
+            if (errors.Count > 0) return errors;
+
+            MapDataToInvoice(invoice, data);
+
+            return invoice;
+        }
+
+        private static void MapDataToInvoice(Invoice invoice,InvoiceData data)
+        {
+            invoice.Currency = data.Currency;
+            invoice.DueDate = data.DueDate;
+            invoice.CustomerAddress = data.CustomerAddress;
+            invoice.CustomerName = data.CustomerName;
+            invoice.CustomerEmail = data.CustomerEmail;
+            invoice.Notes = data.Notes;
+        }
+
+        public void MarkAsPaid()
+        {
+            Status = "Paid";
+            PaidAt = DateTime.UtcNow;
+        }
+
+        public void MarkCancelled() => Status = "Cancelled";
+
+        /// <summary>
+        /// Infrastructure-only method for rehydrating invoice items from persistence.
+        /// Do not use in business logic.
+        /// </summary>
+        public void AddInvoiceItems(IEnumerable<InvoiceItem> invoiceItems) => _invoiceItems.AddRange(invoiceItems);
+
+        public ErrorOr<Success> AddInvoiceItem(InvoiceItemData data)
+        {
+            var itemResult = InvoiceItem.Create(data);
+            if (itemResult.IsError)
+                return itemResult.Errors;
+            _invoiceItems.Add(itemResult.Value);
+            RecalculateTotals();
+            return Result.Success;
+        }
+
+        public void SetUserId(Guid userId) => UserId = UserId.CreateUnique(userId);
+
+        public void RecalculateTotals()
+        {
+            SubTotal = _invoiceItems.Sum(item => item.TotalPrice == null? 0 : item.TotalPrice );
+            TaxAmount = SubTotal * TaxRate;
+            TotalAmount = SubTotal + TaxAmount;
+        }
+
+        public void SetInvoiceNumber(int serialNumber) => InvoiceNumber = $"INV-{serialNumber:D6}";
+
+        // private static ErrorOr<Success> ValidateAndAddInvoiceItems(IInvoiceData data,Invoice invoice)
+        // {
+        //     var errors = new List<Error>();
+
+        //     if (data.InvoiceItems == null || !data.InvoiceItems.Any())
+        //     {
+        //         errors.Add(Errors.Invoice.InvoiceItemError);
+        //         return errors;
+        //     }
+
+        //     foreach (var itemdata in data.InvoiceItems)
+        //     {
+        //         ErrorOr<Success> itemResult = invoice.AddInvoiceItem(itemdata);
+
+        //         if (itemResult.IsError)
+        //         {
+        //             errors.AddRange(itemResult.Errors);
+        //             return errors;
+        //         }
+        //     }
+
+        //     if (errors.Count > 0) return errors;
+
+        //     return Result.Success;
+        // }   
     }
 }
