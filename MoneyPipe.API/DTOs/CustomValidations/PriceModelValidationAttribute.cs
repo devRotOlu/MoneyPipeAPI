@@ -6,7 +6,7 @@ namespace MoneyPipe.API.DTOs.CustomValidations
     {
         protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
         {
-            var request = (CreateInvoiceItemsDTO)validationContext.ObjectInstance;
+            var request = (CreateInvoiceItemDTO)validationContext.ObjectInstance;
 
             var hasQuantity = request.Quantity.HasValue;
             var hasUnitPrice = request.UnitPrice.HasValue;

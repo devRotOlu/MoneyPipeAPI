@@ -4,6 +4,7 @@ using MoneyPipe.Application.Services.Authentication.Commands.Login;
 using MoneyPipe.Application.Services.Authentication.Commands.PasswordReset;
 using MoneyPipe.Application.Services.Authentication.Commands.Register;
 using MoneyPipe.Application.Services.Authentication.Common;
+using MoneyPipe.Application.Services.Invoicing.Commands.CreateInvoice;
 using MoneyPipe.Domain.UserAggregate;
 using MoneyPipe.Domain.UserAggregate.Models;
 
@@ -20,6 +21,8 @@ namespace MoneyPipe.API.Configurations
             CreateMap<AuthenticationResult, UserDetailsDTO>();
             CreateMap<PasswordResetDTO,PasswordResetCommand>();
             CreateMap<LoginDTO,LoginCommand>();
+            CreateMap<CreateInvoiceDTO,CreateInvoiceCommand>();
+            CreateMap<CreateInvoiceItemDTO,CreateInvoiceItem>();
 
             // CreateMap<User, UserDetailsDTO>()
             //     .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id.ToString()));
