@@ -1,4 +1,3 @@
-using MoneyPipe.Application.ReadModels;
 using MoneyPipe.Domain.UserAggregate;
 using MoneyPipe.Domain.UserAggregate.Entities;
 using MoneyPipe.Domain.UserAggregate.ValueObjects;

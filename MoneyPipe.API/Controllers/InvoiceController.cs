@@ -1,13 +1,15 @@
 using AutoMapper;
 using ErrorOr;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MoneyPipe.API.Common.Http;
-using MoneyPipe.API.DTOs;
-using MoneyPipe.Application.Services.Invoicing.Commands.Common;
+using MoneyPipe.API.DTOs.Requests;
+using MoneyPipe.API.DTOs.Responses;
 using MoneyPipe.Application.Services.Invoicing.Commands.CreateInvoice;
 using MoneyPipe.Application.Services.Invoicing.Commands.EditInvoice;
+using MoneyPipe.Application.Services.Invoicing.Common;
+using MoneyPipe.Application.Services.Invoicing.Queries.GetInvoice;
+using MoneyPipe.Application.Services.Invoicing.Queries.GetInvoices;
 
 
 namespace MoneyPipe.API.Controllers
@@ -27,30 +29,30 @@ namespace MoneyPipe.API.Controllers
             return invoiceResult.Match(
                 invoice =>
                 {
-                    var dto = _mapper.Map<GetInvoiceDTO>(invoiceResult);
+                    var dto = _mapper.Map<GetInvoiceDTO>(invoice);
                     return Ok(ApiResponse<GetInvoiceDTO>.Ok(dto,"Invoice Created Successfully!"));
                 },
                 Problem
             );
         }
 
-        // [HttpGet("get-invoices")]
-        // public async Task<IActionResult> GetInvoices()
-        // {
-        //     var invoices = await _invoiceService.GetInvoicesAsync(User);
+        [HttpGet("get-invoices")]
+        public async Task<IActionResult> GetInvoices([FromQuery] int? pageSize,[FromQuery] DateTime? lastTimestamp)
+        {
+            var command = new GetInvoicesQuery(pageSize,lastTimestamp);
+            var invoiceResult = await _mediatr.Send(command);
+            var dto = _mapper.Map<GetInvoicesDTO>(invoiceResult);
+            return Ok(ApiResponse<GetInvoicesDTO>.Ok(dto));
+        }
 
-        //     return Ok(ApiResponse<IEnumerable<GetInvoiceDTO>>.Ok(invoices));
-        // }
-
-        // [HttpGet("get-invoice")]
-        // public async Task<IActionResult> GetInvoice([FromQuery] string invoiceId)
-        // {
-        //     var invoiceResult = await _invoiceService.GetInvoiceByIdAsync(invoiceId);
-        //     return invoiceResult.Match(
-        //         invoice => Ok(ApiResponse<GetInvoiceDTO>.Ok(invoice)),
-        //         Problem
-        //     );
-        // }
+        [HttpGet("get-invoice")]
+        public async Task<IActionResult> GetInvoice([FromQuery] Guid invoiceId)
+        {
+            var command = new GetInvoiceQuery(invoiceId);
+            var invoiceResult = await _mediatr.Send(command);
+            var dto = _mapper.Map<GetInvoiceDTO>(invoiceResult);
+            return Ok(ApiResponse<GetInvoiceDTO>.Ok(dto));
+        }
 
         [HttpPut("edit-invoice")]
         public async Task<IActionResult> EditInvoice(EditInvoiceDTO dto)
@@ -58,7 +60,10 @@ namespace MoneyPipe.API.Controllers
             var command = _mapper.Map<EditInvoiceCommand>(dto);
             ErrorOr<InvoiceResult> invoiceResult = await _mediatr.Send(command);
             return invoiceResult.Match(
-                success => Ok(ApiResponse<InvoiceResult>.Ok(invoiceResult.Value, "Invoice successfully edited!")),
+                invoice =>{
+                    var dto = _mapper.Map<GetInvoiceDTO>(invoice);
+                    return Ok(ApiResponse<GetInvoiceDTO>.Ok(dto, "Invoice successfully edited!"));
+                },
                 Problem
             );
         }   

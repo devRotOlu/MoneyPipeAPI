@@ -1,4 +1,4 @@
-namespace MoneyPipe.Application.Services.Authentication
+namespace MoneyPipe.Application.Services.Authentication.Common
 {
     public record AuthenticationBase
     {

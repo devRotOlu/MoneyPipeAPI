@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using MoneyPipe.API.DTOs.CustomValidations;
 
-namespace MoneyPipe.API.DTOs
+namespace MoneyPipe.API.DTOs.Requests
 {
     [PricingModelValidation]
     public record CreateInvoiceItemDTO

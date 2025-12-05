@@ -1,6 +1,6 @@
 using ErrorOr;
 using MediatR;
-using MoneyPipe.Application.Services.Invoicing.Commands.Common;
+using MoneyPipe.Application.Services.Invoicing.Common;
 
 namespace MoneyPipe.Application.Services.Invoicing.Commands.CreateInvoice
 {

@@ -30,6 +30,18 @@ namespace MoneyPipe.Infrastructure.Persistence.Repositories.Reads
             return invoice;
         }
 
+        public async Task<IEnumerable<Invoice>> GetInvoicesAsync(Guid userId,int pageSize,DateTime? lastTimestamp)
+        {
+            var sql = @$"SELECT * FROM {_invoiceTable}
+                        WHERE userid = @UserId
+                        {(lastTimestamp.HasValue ? "AND createdat > @LastTimestamp" : "")}
+                        ORDER BY createdat ASC
+                        LIMIT @PageSize";
+
+            return await _dbConnection.QueryAsync<Invoice>(sql, 
+            new { LastTimestamp = lastTimestamp,UserId = userId,PageSize = pageSize });
+        }
+
         public async Task<int> GetNextInvoiceNumberAsync()
         {
             var maxId = await _dbConnection.QuerySingleAsync<int>(

@@ -1,4 +1,4 @@
-namespace MoneyPipe.Application.Services.Invoicing.Commands.Common
+namespace MoneyPipe.Application.Services.Invoicing.Common
 {
     public record InvoiceItemResult(string Id,string Description, int Quantity,
     decimal UnitPrice,decimal TotalPrice);

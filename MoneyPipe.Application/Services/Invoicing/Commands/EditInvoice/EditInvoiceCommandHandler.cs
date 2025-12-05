@@ -5,7 +5,7 @@ using MediatR;
 using Microsoft.AspNetCore.Http;
 using MoneyPipe.Application.Interfaces;
 using MoneyPipe.Application.Interfaces.Persistence.Reads;
-using MoneyPipe.Application.Services.Invoicing.Commands.Common;
+using MoneyPipe.Application.Services.Invoicing.Common;
 using MoneyPipe.Domain.Common.Errors;
 using MoneyPipe.Domain.InvoiceAggregate;
 using MoneyPipe.Domain.InvoiceAggregate.Models;

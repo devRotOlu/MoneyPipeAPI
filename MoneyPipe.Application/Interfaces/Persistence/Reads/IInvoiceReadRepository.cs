@@ -6,5 +6,6 @@ namespace MoneyPipe.Application.Interfaces.Persistence.Reads
     {
         Task<Invoice?> GetByIdAsync(Guid invoiceId);
         Task<int> GetNextInvoiceNumberAsync();
+        Task<IEnumerable<Invoice>> GetInvoicesAsync(Guid userId,int pageSize,DateTime? lastTimestamp);
     }
 }

@@ -22,6 +22,7 @@ namespace MoneyPipe.Domain.InvoiceAggregate
         public DateTime? DueDate { get; private set;}
         public DateTime IssueDate { get; private set; }
         public DateTime? PaidAt { get; private set; }
+        public DateTime CreatedAt {get;private set;}
         public string CustomerName { get; private set; } = null!;
         public string CustomerEmail { get; private set; } = null!;
         public string? CustomerAddress { get; private set; } 
@@ -38,7 +39,10 @@ namespace MoneyPipe.Domain.InvoiceAggregate
 
         public static ErrorOr<Invoice> Create(InvoiceData data)
         {
-            var invoice = new Invoice(InvoiceId.CreateUnique(Guid.NewGuid()));
+            var invoice = new Invoice(InvoiceId.CreateUnique(Guid.NewGuid()))
+            {
+                CreatedAt = DateTime.UtcNow
+            };
 
             var errors = new List<Error>();
 

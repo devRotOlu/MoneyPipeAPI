@@ -1,4 +1,4 @@
-﻿namespace MoneyPipe.API.DTOs
+﻿namespace MoneyPipe.API.DTOs.Responses
 {
     public record UserDetailsDTO
     {

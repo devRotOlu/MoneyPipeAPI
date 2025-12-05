@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace MoneyPipe.API.DTOs
+namespace MoneyPipe.API.DTOs.Requests
 {
     public record EditInvoiceDTO:CreateInvoiceDTO
     {

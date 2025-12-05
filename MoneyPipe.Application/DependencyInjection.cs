@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MoneyPipe.Application.Interfaces.IServices;
+using MoneyPipe.Application.Mapping;
 using MoneyPipe.Application.Services;
 
 namespace MoneyPipe.Application
@@ -16,6 +17,7 @@ namespace MoneyPipe.Application
             services.AddScoped<IEmailTemplateService,EmailTemplateService>();
 
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
+            services.AddAutoMapper(typeof(ApplicationMappingProfile));
 
             return services;
         }

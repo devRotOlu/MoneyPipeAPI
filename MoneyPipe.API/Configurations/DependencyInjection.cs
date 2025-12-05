@@ -6,12 +6,12 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MoneyPipe.API.Common.Errors;
 using MoneyPipe.API.Common.Http;
-using MoneyPipe.API.Configurations;
+using MoneyPipe.API.Mapping;
 using MoneyPipe.Application.Common;
 
-namespace MoneyPipe.API
+namespace MoneyPipe.API.Configurations
 {
-    public static class ServiceExtension
+    public static class DependencyInjection
     {
         public static IServiceCollection AddPresentation(this IServiceCollection services,ConfigurationManager configuration,IHostEnvironment env)
         {
@@ -29,7 +29,7 @@ namespace MoneyPipe.API
                 op.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
             });
 
-            services.AddAutoMapper(typeof(MapperInitializer));
+            services.AddAutoMapper(typeof(APIMappingProfile));
 
             services.AddAuthorization();
 

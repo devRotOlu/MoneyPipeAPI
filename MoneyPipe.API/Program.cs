@@ -1,5 +1,5 @@
-using MoneyPipe.API;
 using MoneyPipe.API.Common.Http;
+using MoneyPipe.API.Configurations;
 using MoneyPipe.API.Middleware;
 using MoneyPipe.Application;
 using MoneyPipe.Infrastructure;

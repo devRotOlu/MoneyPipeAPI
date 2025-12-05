@@ -15,7 +15,7 @@ CREATE TABLE Invoices (
     CustomerAddress TEXT,
     Notes TEXT,
     PaymentUrl TEXT,
-    CreatedAt TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CreatedAt TIMESTAMPTZ NOT NULL,
     UpdatedAt TIMESTAMPTZ NULL
 );
 

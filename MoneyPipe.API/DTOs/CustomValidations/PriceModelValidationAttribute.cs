@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using MoneyPipe.API.DTOs.Requests;
 
 namespace MoneyPipe.API.DTOs.CustomValidations
 {
