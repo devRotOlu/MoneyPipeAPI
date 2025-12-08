@@ -82,7 +82,7 @@ namespace MoneyPipe.API.Controllers
 
         [AllowAnonymous]
         [HttpPost("confirm-email")]
-        public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, [FromQuery] string token)
+        public async Task<IActionResult> ConfirmEmail([FromQuery] Guid userId, [FromQuery] string token)
         {
             var command = new ConfirmUserCommand(userId,token);
             var authResult = await _mediatr.Send(command);

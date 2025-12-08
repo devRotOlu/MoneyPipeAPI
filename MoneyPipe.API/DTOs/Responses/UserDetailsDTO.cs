@@ -8,6 +8,6 @@
 
         public string Email { get; init; } = null!;
 
-        public string Id { get; init; } = null!;
+        public Guid Id { get; init; } 
     }
 }

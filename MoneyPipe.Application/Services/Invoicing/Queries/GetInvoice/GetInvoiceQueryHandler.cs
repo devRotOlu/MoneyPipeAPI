@@ -1,7 +1,5 @@
-using System.Security.Claims;
 using AutoMapper;
 using MediatR;
-using Microsoft.AspNetCore.Http;
 using MoneyPipe.Application.Interfaces.Persistence.Reads;
 using MoneyPipe.Application.Services.Invoicing.Common;
 

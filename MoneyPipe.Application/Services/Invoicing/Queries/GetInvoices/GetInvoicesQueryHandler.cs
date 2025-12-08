@@ -8,11 +8,11 @@ using MoneyPipe.Application.Services.Invoicing.Common;
 namespace MoneyPipe.Application.Services.Invoicing.Queries.GetInvoices
 {
     public class GetInvoicesQueryHandler(IInvoiceReadRepository invoiceQuery, 
-    HttpContextAccessor httpContextAccessor,IMapper mapper) 
+    IHttpContextAccessor httpContextAccessor,IMapper mapper) 
     : IRequestHandler<GetInvoicesQuery, GetInvoicesResult>
     {
         private readonly IInvoiceReadRepository _invoiceQuery = invoiceQuery;
-        private readonly HttpContextAccessor _httpContextAccessor = httpContextAccessor;
+        private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
         private readonly IMapper _mapper = mapper;
         private const int _defaultPageSize = 20;
         private const int _maximumPageSize = 50; 
@@ -26,15 +26,15 @@ namespace MoneyPipe.Application.Services.Invoicing.Queries.GetInvoices
             var invoices = await _invoiceQuery.GetInvoicesAsync(Guid.Parse(userId),pageSize??0,
             request.LastTimestamp);
 
-            var invoiceResult = _mapper.Map<IEnumerable<InvoiceResult>>(invoices);
+            var invoiceResults = _mapper.Map<IEnumerable<InvoiceResult>>(invoices);
 
-            if (!invoiceResult.Any()) return new GetInvoicesResult(invoiceResult,null);
+            if (!invoiceResults.Any()) return new GetInvoicesResult(invoiceResults,null);
 
             var invoice = invoices.ToList().Last();
 
             var lastTimestamp = invoice.CreatedAt;
 
-            return new GetInvoicesResult(invoiceResult,lastTimestamp);
+            return new GetInvoicesResult(invoiceResults,lastTimestamp);
         }
     }
 }

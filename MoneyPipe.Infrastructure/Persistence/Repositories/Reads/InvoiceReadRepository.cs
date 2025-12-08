@@ -14,7 +14,7 @@ namespace MoneyPipe.Infrastructure.Persistence.Repositories.Reads
 
         public async Task<Invoice?> GetByIdAsync(Guid invoiceId)
         {
-            var sql = $@"SELECT * FROM {_invoiceTable} WHERE id = @Id 
+            var sql = $@"SELECT * FROM {_invoiceTable} WHERE id = @Id; 
                 SELECT * FROM {_invoiceItemTable} WHERE invoiceid = @Id ORDER BY id
             ";
             using var multi = await _dbConnection.QueryMultipleAsync(sql,new {Id = invoiceId});
@@ -44,9 +44,10 @@ namespace MoneyPipe.Infrastructure.Persistence.Repositories.Reads
 
         public async Task<int> GetNextInvoiceNumberAsync()
         {
-            var maxId = await _dbConnection.QuerySingleAsync<int>(
-                @$"SELECT COALESCE(MAX(Id), 0) FROM {_invoiceTable}");
-            return maxId + 1;
+            var nextVal = await _dbConnection.QuerySingleAsync<int>(
+                "SELECT nextval('invoice_number_seq')");
+            return nextVal;
         }
+
     }
 }

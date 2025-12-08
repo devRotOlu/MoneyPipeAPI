@@ -21,13 +21,12 @@ namespace MoneyPipe.Application.Services.Invoicing.Commands.EditInvoice
         private readonly IUnitOfWork _unitofWork = unitofWork;
         private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
-        public async Task<ErrorOr<InvoiceResult>> Handle(EditInvoiceCommand request, CancellationToken cancellationToken)
+        public async Task<ErrorOr<InvoiceResult>> Handle(EditInvoiceCommand request, 
+        CancellationToken cancellationToken)
         {
-            var isInvoiceId = Guid.TryParse(request.InvoiceId,out var invoiceId);
-            Invoice? existingInvoice = null;
-            if (isInvoiceId) existingInvoice = await _invoiceQuery.GetByIdAsync(invoiceId);
+            Invoice? existingInvoice = await _invoiceQuery.GetByIdAsync(request.InvoiceId);
 
-            if (!isInvoiceId || existingInvoice is null) return Errors.Invoice.NotFound;
+            if (existingInvoice is null) return Errors.Invoice.NotFound;
 
             var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -39,7 +38,7 @@ namespace MoneyPipe.Application.Services.Invoicing.Commands.EditInvoice
 
             var editedInvoice = editResult.Value;
             editedInvoice.SetUserId(Guid.Parse(userId));
-
+    
             await _unitofWork.Invoices.UpdateAsync(editedInvoice);
             _unitofWork.Commit();
 

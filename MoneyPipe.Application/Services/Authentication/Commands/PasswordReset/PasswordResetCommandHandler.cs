@@ -13,15 +13,12 @@ namespace MoneyPipe.Application.Services.Authentication.Commands.PasswordReset
         private readonly IUserReadRepository _userQuery = userQuery;
         public async Task<ErrorOr<Success>> Handle(PasswordResetCommand request, CancellationToken cancellationToken)
         {
-            var isUserId = Guid.TryParse(request.UserId, out var userId);
 
-            User? user = null;
+            User? user = await _userQuery.GetUserByIdAsync(request.UserId);
 
-            if (isUserId) user = await _userQuery.GetUserByIdAsync(userId);
+            if (user is null) return Errors.User.NotFound;
 
-            if (!isUserId || user is null) return Errors.User.NotFound;
-
-            var tokenObj = await _userQuery.GetPasswordResetTokenAsync(request.Token,userId);
+            var tokenObj = await _userQuery.GetPasswordResetTokenAsync(request.Token,request.UserId);
 
             if (tokenObj is null) return Errors.PasswordResetToken.InvalidToken;
             if (tokenObj.ExpiresAt.CompareTo(DateTime.UtcNow) <= 0 || tokenObj.IsUsed) return Errors.PasswordResetToken.Expired;

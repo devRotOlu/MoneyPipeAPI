@@ -21,10 +21,10 @@ namespace MoneyPipe.Infrastructure.Persistence.Repositories.Writes
             var invoiceSql = @$"
             INSERT INTO {_invoiceTable}
             (id, userid, invoicenumber, subtotal, taxamount, totalamount, currency, status,
-             duedate, issuedate, paidat, customername, customeremail, customeraddress, notes, paymenturl, createdat)
-            VALUES
+             duedate, customername, customeremail, customeraddress, notes,
+              paymenturl, createdat)VALUES
             (@Id, @UserId, @InvoiceNumber, @SubTotal, @TaxAmount, @TotalAmount, @Currency, @Status,
-             @DueDate, @IssueDate, @PaidAt, @CustomerName, @CustomerEmail, @CustomerAddress, @Notes, @PaymentUrl,@CreatedAt);";
+             @DueDate, @CustomerName, @CustomerEmail, @CustomerAddress, @Notes, @PaymentUrl,@CreatedAt);";
             await _dbConnection.ExecuteAsync(invoiceSql,invoice,_transaction);
 
             foreach (var item in invoice.InvoiceItems)
@@ -38,9 +38,8 @@ namespace MoneyPipe.Infrastructure.Persistence.Repositories.Writes
 
         public async Task UpdateAsync(Invoice invoice)
         {
-            var invoiceSql = @" 
-                    UPDATE invoices SET
-                    invoicenumber = @InvoiceNumber,
+            var invoiceSql = @$" 
+                    UPDATE {_invoiceTable} SET
                     subtotal = @SubTotal,
                     taxamount = @TaxAmount,
                     totalamount = @TotalAmount,
@@ -90,7 +89,7 @@ namespace MoneyPipe.Infrastructure.Persistence.Repositories.Writes
                     var insertItemInsertSql = @$"INSERT INTO {_invoiceItemTable} 
                     (id, invoiceid, description, quantity, unitprice, totalprice)
                     VALUES (@Id, @InvoiceId, @Description, @Quantity, @UnitPrice, @TotalPrice);";
-                    await _dbConnection.ExecuteAsync(invoiceSql,item,_transaction);
+                    await _dbConnection.ExecuteAsync(insertItemInsertSql,item,_transaction);
                 }
             }
         }

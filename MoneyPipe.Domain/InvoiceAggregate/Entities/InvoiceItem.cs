@@ -22,21 +22,25 @@ namespace MoneyPipe.Domain.InvoiceAggregate.Entities
         public int? Quantity { get; private set; }
         public decimal? UnitPrice { get; private set; } 
         public decimal? TotalPrice { get; private set; }
+        public InvoiceId InvoiceId {get;private set;}
 
-        internal static ErrorOr<InvoiceItem> Create(InvoiceItemData data)
+        internal static ErrorOr<InvoiceItem> Create(InvoiceItemData data,InvoiceId invoiceId)
         {
             var validationResult = ValidateData(data);
 
             if (validationResult.IsError) return validationResult.Errors;
 
-            var invoiceItem = new InvoiceItem(InvoiceItemId.CreateUnique(Guid.NewGuid()));
+            var invoiceItem = new InvoiceItem(InvoiceItemId.CreateUnique(Guid.NewGuid()))
+            {
+                InvoiceId = invoiceId
+            };
 
             MapDataToInvoiceItem(data,invoiceItem);
 
             return invoiceItem;
         }
 
-        internal static ErrorOr<InvoiceItem> Edit(EditInvoiceItemData data)
+        internal static ErrorOr<InvoiceItem> Edit(EditInvoiceItemData data,InvoiceId invoiceId)
         {
             var errors = new List<Error>();
 
@@ -48,7 +52,10 @@ namespace MoneyPipe.Domain.InvoiceAggregate.Entities
 
             if (errors.Count != 0) return errors;
 
-            var invoiceItem = new InvoiceItem(InvoiceItemId.CreateUnique(data.Id));
+            var invoiceItem = new InvoiceItem(InvoiceItemId.CreateUnique(data.Id ?? Guid.Empty))
+            {
+                InvoiceId = invoiceId
+            };
            
             MapDataToInvoiceItem(data, invoiceItem);
 

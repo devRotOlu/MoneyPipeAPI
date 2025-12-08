@@ -8,7 +8,7 @@ namespace MoneyPipe.API.DTOs.Requests
         public string Token { get; set; } = null!;
 
         [Required]
-        public string UserId { get; set; } = null!;
+        public Guid UserId { get; set; } 
 
         [Required, DataType(DataType.Password)]
         public string NewPassword { get; init; } = null!;

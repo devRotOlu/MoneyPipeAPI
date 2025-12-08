@@ -17,12 +17,13 @@ namespace MoneyPipe.Domain.InvoiceAggregate
         public decimal? SubTotal { get; private set; }
         public decimal? TaxAmount { get; private set; }
         public decimal? TotalAmount { get; private set; }
-        public string Currency { get; private set;} = string.Empty;
+        public string? Currency { get; private set;} 
         public string Status { get; private set;} = "Draft";
         public DateTime? DueDate { get; private set;}
-        public DateTime IssueDate { get; private set; }
+        public DateTime? IssueDate { get; private set; }
         public DateTime? PaidAt { get; private set; }
         public DateTime CreatedAt {get;private set;}
+        public DateTime UpdatedAt {get;private set;}
         public string CustomerName { get; private set; } = null!;
         public string CustomerEmail { get; private set; } = null!;
         public string? CustomerAddress { get; private set; } 
@@ -41,7 +42,8 @@ namespace MoneyPipe.Domain.InvoiceAggregate
         {
             var invoice = new Invoice(InvoiceId.CreateUnique(Guid.NewGuid()))
             {
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
             };
 
             var errors = new List<Error>();
@@ -56,9 +58,11 @@ namespace MoneyPipe.Domain.InvoiceAggregate
 
             foreach (var itemdata in data.InvoiceItems)
             {
-                ErrorOr<Success> itemResult = invoice.AddInvoiceItem(itemdata);
+                //ErrorOr<Success> itemResult = invoice.AddInvoiceItem(itemdata);
+                ErrorOr<InvoiceItem> itemResult = InvoiceItem.Create(itemdata,invoice.Id);
+                ErrorOr<Success> result = invoice.AddInvoiceItem(itemResult);
 
-                if (itemResult.IsError)
+                if (result.IsError)
                 {
                     errors.AddRange(itemResult.Errors);
                     return errors;
@@ -82,7 +86,10 @@ namespace MoneyPipe.Domain.InvoiceAggregate
 
             if (string.IsNullOrWhiteSpace(data.CustomerEmail)) errors.Add(Errors.Invoice.InvalidCustomerEmail);
 
-            var invoice = new Invoice(InvoiceId.CreateUnique(data.Id));
+            var invoice = new Invoice(InvoiceId.CreateUnique(data.Id))
+            {
+                UpdatedAt = DateTime.UtcNow
+            };
 
             if (data.InvoiceItems == null || !data.InvoiceItems.Any())
             {
@@ -94,9 +101,10 @@ namespace MoneyPipe.Domain.InvoiceAggregate
             {
                 // determine if it's newly added item or just edited based on its id
                 ErrorOr<InvoiceItem> itemResult;
-                if (Guid.Empty == item.Id) itemResult = InvoiceItem.Create(item);
-                else itemResult = InvoiceItem.Edit(item);
-                if (itemResult.IsError)
+                if (item.Id is null) itemResult = InvoiceItem.Create(item,invoice.Id);
+                else itemResult = InvoiceItem.Edit(item,invoice.Id);
+                ErrorOr<Success> result = invoice.AddInvoiceItem(itemResult);
+                if (result.IsError)
                 {
                     errors.AddRange(itemResult.Errors);
                     return errors;
@@ -112,7 +120,7 @@ namespace MoneyPipe.Domain.InvoiceAggregate
 
         private static void MapDataToInvoice(Invoice invoice,InvoiceData data)
         {
-            invoice.Currency = data.Currency;
+            invoice.Currency = data.Currency??"NGN";
             invoice.DueDate = data.DueDate;
             invoice.CustomerAddress = data.CustomerAddress;
             invoice.CustomerName = data.CustomerName;
@@ -134,9 +142,8 @@ namespace MoneyPipe.Domain.InvoiceAggregate
         /// </summary>
         public void AddInvoiceItems(IEnumerable<InvoiceItem> invoiceItems) => _invoiceItems.AddRange(invoiceItems);
 
-        public ErrorOr<Success> AddInvoiceItem(InvoiceItemData data)
+        public ErrorOr<Success> AddInvoiceItem(ErrorOr<InvoiceItem> itemResult)
         {
-            var itemResult = InvoiceItem.Create(data);
             if (itemResult.IsError)
                 return itemResult.Errors;
             _invoiceItems.Add(itemResult.Value);

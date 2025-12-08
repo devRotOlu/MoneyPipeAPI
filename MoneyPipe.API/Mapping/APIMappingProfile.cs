@@ -6,6 +6,9 @@ using MoneyPipe.Application.Services.Authentication.Commands.PasswordReset;
 using MoneyPipe.Application.Services.Authentication.Commands.Register;
 using MoneyPipe.Application.Services.Authentication.Common;
 using MoneyPipe.Application.Services.Invoicing.Commands.CreateInvoice;
+using MoneyPipe.Application.Services.Invoicing.Commands.EditInvoice;
+using MoneyPipe.Application.Services.Invoicing.Common;
+using MoneyPipe.Application.Services.Invoicing.Queries.GetInvoices;
 
 namespace MoneyPipe.API.Mapping
 {
@@ -19,6 +22,12 @@ namespace MoneyPipe.API.Mapping
             CreateMap<LoginDTO,LoginCommand>();
             CreateMap<CreateInvoiceDTO,CreateInvoiceCommand>();
             CreateMap<CreateInvoiceItemDTO,CreateInvoiceItem>();
+            CreateMap<InvoiceResult,GetInvoiceDTO>();
+            CreateMap<InvoiceItemResult,GetInvoiceItemDTO>();
+            CreateMap<EditInvoiceDTO,EditInvoiceCommand>();
+            CreateMap<EditInvoiceItemDTO,EditInvoiceItem>();
+            CreateMap<GetInvoicesResult,GetInvoicesDTO>();
+            CreateMap<InvoiceResult,GetInvoiceBase>();
         }
     }
 }

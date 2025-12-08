@@ -5,9 +5,12 @@ using MoneyPipe.Application.Services.Invoicing.Commands.CreateInvoice;
 using MoneyPipe.Application.Services.Invoicing.Commands.EditInvoice;
 using MoneyPipe.Application.Services.Invoicing.Common;
 using MoneyPipe.Domain.InvoiceAggregate;
+using MoneyPipe.Domain.InvoiceAggregate.Entities;
 using MoneyPipe.Domain.InvoiceAggregate.Models;
+using MoneyPipe.Domain.InvoiceAggregate.ValueObjects;
 using MoneyPipe.Domain.UserAggregate;
 using MoneyPipe.Domain.UserAggregate.Models;
+using MoneyPipe.Domain.UserAggregate.ValueObjects;
 
 namespace MoneyPipe.Application.Mapping
 {
@@ -16,15 +19,24 @@ namespace MoneyPipe.Application.Mapping
         public ApplicationMappingProfile()
         {
             CreateMap<RegisterCommand,UserRegisterData>();
+            CreateMap<UserId, Guid>()
+                .ConvertUsing(src => src.Value);
             CreateMap<User,AuthenticationResult>()
-                .ForMember(dest=> dest.Id, opt => opt.MapFrom(src=> src.Id.Value.ToString()));
-            CreateMap<Invoice,InvoiceResult>();
+                .ForMember(dest=> dest.Id, opt => opt.MapFrom(src=> src.Id.Value));
+            CreateMap<InvoiceId, Guid>()
+                .ConvertUsing(src => src.Value);
+            CreateMap<Invoice,InvoiceResult>()
+                .ForMember(dest=>dest.Id,opt=>opt.MapFrom(src=>src.Id.Value));
+            CreateMap<InvoiceItemId,Guid>()
+                .ConvertUsing(src => src.Value);
+            CreateMap<InvoiceItem,InvoiceItemResult>()
+                .ForMember(dest=>dest.Id,opt=>opt.MapFrom(src=>src.Id.Value));
             CreateMap<CreateInvoiceCommand,InvoiceData>();
             CreateMap<CreateInvoiceItem,InvoiceItemData>();
             CreateMap<EditInvoiceCommand,EditInvoiceData>()
-                .ForMember(dest=>dest.Id,opt=>opt.MapFrom(src=>Guid.Parse(src.InvoiceId)));
-            CreateMap<EditInvoiceItem,EditInvoiceData>()
-                .ForMember(dest=>dest.Id,opt=>opt.MapFrom(src=>Guid.Parse(src.InvoiceItemId)));
+                .ForMember(dest=>dest.Id,opt=>opt.MapFrom(src=>src.InvoiceId));
+            CreateMap<EditInvoiceItem,EditInvoiceItemData>()
+                .ForMember(dest=>dest.Id,opt=>opt.MapFrom(src=>src.InvoiceItemId));
         }
     }
 }

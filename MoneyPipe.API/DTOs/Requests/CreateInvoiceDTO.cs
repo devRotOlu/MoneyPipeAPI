@@ -4,7 +4,7 @@ namespace MoneyPipe.API.DTOs.Requests
 {
     public record CreateInvoiceDTO
     {
-        public string Currency { get; init; } = null!;
+        public string? Currency { get; init; } 
 
         [MaxLength(500, ErrorMessage = "Notes cannot exceed 500 characters.")]
         public string? Notes { get; init; }

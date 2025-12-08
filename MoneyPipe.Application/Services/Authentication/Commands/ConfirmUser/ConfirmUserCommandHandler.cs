@@ -14,13 +14,9 @@ namespace MoneyPipe.Application.Services.Authentication.Commands.ConfirmUser
 
         public async Task<ErrorOr<Success>> Handle(ConfirmUserCommand request, CancellationToken cancellationToken)
         {
-            var isUserId = Guid.TryParse(request.UserId,out var userId) ;
+            User? user = await _userQuery.GetUserByIdAsync(request.UserId);
 
-            User? user = null;
-
-            if (isUserId) user = await _userQuery.GetUserByIdAsync(userId);
-
-            if (!isUserId || user is null) return Errors.User.NotFound;
+            if (user is null) return Errors.User.NotFound;
             if (user.EmailConfirmationExpiry?.CompareTo(DateTime.UtcNow) < 0) return Errors.EmailConfirmation.TokenExpired;
             if (user.EmailConfirmationToken?.CompareTo(request.Token) != 0) return Errors.EmailConfirmation.TokenMismatch;
             if (user.EmailConfirmed) return Errors.EmailConfirmation.AlreadyConfirmed;
