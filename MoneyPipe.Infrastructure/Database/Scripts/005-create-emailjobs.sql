@@ -5,7 +5,6 @@ CREATE TABLE EmailJobs (
     Message TEXT NOT NULL,
     Status TEXT DEFAULT 'pending', -- pending, sent, failed
     Attempts INT DEFAULT 0,
-    --MaxAttempts INT DEFAULT 5,
     CreatedAt TIMESTAMPTZ DEFAULT NOW(),
     UpdatedAt TIMESTAMPTZ DEFAULT NOW()
 );

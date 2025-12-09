@@ -1,4 +1,5 @@
-﻿using Dapper;
+﻿using CloudinaryDotNet;
+using Dapper;
 using DbUp;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,6 +25,7 @@ namespace MoneyPipe.Infrastructure
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IUserReadRepository,UserReadRepository>();
             services.AddScoped<IInvoiceReadRepository,InvoiceReadRepository>();
+            services.AddScoped<ICloudinary,Cloudinary>();
 
             services.RegisterAllEntityIdTypeHandlers();
 

@@ -2,6 +2,8 @@ using ErrorOr;
 using MoneyPipe.Domain.Common.Errors;
 using MoneyPipe.Domain.Common.Models;
 using MoneyPipe.Domain.InvoiceAggregate.Entities;
+using MoneyPipe.Domain.InvoiceAggregate.Enums;
+using MoneyPipe.Domain.InvoiceAggregate.Events;
 using MoneyPipe.Domain.InvoiceAggregate.Models;
 using MoneyPipe.Domain.InvoiceAggregate.ValueObjects;
 using MoneyPipe.Domain.UserAggregate.ValueObjects;
@@ -18,7 +20,7 @@ namespace MoneyPipe.Domain.InvoiceAggregate
         public decimal? TaxAmount { get; private set; }
         public decimal? TotalAmount { get; private set; }
         public string? Currency { get; private set;} 
-        public string Status { get; private set;} = "Draft";
+        public string Status { get; private set;} = InvoiceStatus.Draft.ToString();
         public DateTime? DueDate { get; private set;}
         public DateTime? IssueDate { get; private set; }
         public DateTime? PaidAt { get; private set; }
@@ -58,7 +60,6 @@ namespace MoneyPipe.Domain.InvoiceAggregate
 
             foreach (var itemdata in data.InvoiceItems)
             {
-                //ErrorOr<Success> itemResult = invoice.AddInvoiceItem(itemdata);
                 ErrorOr<InvoiceItem> itemResult = InvoiceItem.Create(itemdata,invoice.Id);
                 ErrorOr<Success> result = invoice.AddInvoiceItem(itemResult);
 
@@ -68,7 +69,6 @@ namespace MoneyPipe.Domain.InvoiceAggregate
                     return errors;
                 }
             }
-
 
             if (errors.Count > 0)
                 return errors;
@@ -130,11 +130,23 @@ namespace MoneyPipe.Domain.InvoiceAggregate
 
         public void MarkAsPaid()
         {
-            Status = "Paid";
+            Status = InvoiceStatus.Paid.ToString();
             PaidAt = DateTime.UtcNow;
+            UpdatedAt = DateTime.UtcNow;
         }
 
-        public void MarkCancelled() => Status = "Cancelled";
+        public void MarkCancelled()
+        {
+            Status = InvoiceStatus.Cancelled.ToString();
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void MarkSent()
+        {
+            Status = InvoiceStatus.Sent.ToString();
+            UpdatedAt = DateTime.UtcNow;
+            AddDomainEvent(new InvoiceCreatedEvent(this,UserId.Value,CustomerEmail));
+        }
 
         /// <summary>
         /// Infrastructure-only method for rehydrating invoice items from persistence.
@@ -153,7 +165,7 @@ namespace MoneyPipe.Domain.InvoiceAggregate
 
         public void SetUserId(Guid userId) => UserId = UserId.CreateUnique(userId);
 
-        public void RecalculateTotals()
+        private void RecalculateTotals()
         {
             SubTotal = _invoiceItems.Sum(item => item.TotalPrice == null? 0 : item.TotalPrice );
             TaxAmount = SubTotal * TaxRate;
@@ -161,31 +173,5 @@ namespace MoneyPipe.Domain.InvoiceAggregate
         }
 
         public void SetInvoiceNumber(int serialNumber) => InvoiceNumber = $"INV-{serialNumber:D6}";
-
-        // private static ErrorOr<Success> ValidateAndAddInvoiceItems(IInvoiceData data,Invoice invoice)
-        // {
-        //     var errors = new List<Error>();
-
-        //     if (data.InvoiceItems == null || !data.InvoiceItems.Any())
-        //     {
-        //         errors.Add(Errors.Invoice.InvoiceItemError);
-        //         return errors;
-        //     }
-
-        //     foreach (var itemdata in data.InvoiceItems)
-        //     {
-        //         ErrorOr<Success> itemResult = invoice.AddInvoiceItem(itemdata);
-
-        //         if (itemResult.IsError)
-        //         {
-        //             errors.AddRange(itemResult.Errors);
-        //             return errors;
-        //         }
-        //     }
-
-        //     if (errors.Count > 0) return errors;
-
-        //     return Result.Success;
-        // }   
     }
 }

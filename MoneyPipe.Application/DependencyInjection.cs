@@ -15,6 +15,7 @@ namespace MoneyPipe.Application
             
             services.AddScoped<ITokenService,TokenService>();
             services.AddScoped<IEmailTemplateService,EmailTemplateService>();
+            services.AddScoped<IInvoicePdfGenerator,InvoicePdfGenerator>();
 
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
             services.AddAutoMapper(typeof(ApplicationMappingProfile));
