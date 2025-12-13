@@ -13,6 +13,8 @@ namespace MoneyPipe.Infrastructure.Persistence
 
         public IUserWriteRepository Users { get; set; }
         public IInvoiceWriteRepository Invoices {get;set;}
+        public IEmailJobWriteRepository EmailJobs { get; set; }
+        public IBackgroundJobWriteRepository BackgroundJobs { get; set; }
 
         public UnitOfWork(IDbConnection dbConnection)
         {
@@ -20,6 +22,8 @@ namespace MoneyPipe.Infrastructure.Persistence
             _transaction = _dbConnection.BeginTransaction();
             Users = new UserWriteRepository(dbConnection,_transaction);
             Invoices = new InvoiceWriteRepository(dbConnection,_transaction);
+            EmailJobs = new EmailJobWriteRepository(dbConnection,_transaction);
+            BackgroundJobs = new BackgroundJobWriteRepository(dbConnection,_transaction);
         }
 
         public void Commit()

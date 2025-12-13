@@ -1,11 +1,11 @@
 using ErrorOr;
 using MoneyPipe.Domain.Common.Errors;
 using MoneyPipe.Domain.Common.Models;
-using MoneyPipe.Domain.UserAggregate.ValueObjects;
+using MoneyPipe.Domain.EmailJobAggregate.ValueObjects;
 
-namespace MoneyPipe.Domain.UserAggregate.Entities
+namespace MoneyPipe.Domain.EmailJobAggregate
 {
-    public class EmailJob:Entity<EmailJobId>
+    public class EmailJob:AggregateRoot<EmailJobId>
     {
         private EmailJob(EmailJobId id):base(id)
         {
@@ -25,7 +25,7 @@ namespace MoneyPipe.Domain.UserAggregate.Entities
         public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; private set; } = DateTime.UtcNow;
 
-        internal static ErrorOr<EmailJob> Create(EmailJobId id,string email, string message, string subject)
+        public static ErrorOr<EmailJob> Create(string email, string message, string subject)
         {
             var errors = new List<Error>();
             if (string.IsNullOrEmpty(message)) errors.Add(Errors.EmailJob.MessageRequired);
@@ -34,7 +34,7 @@ namespace MoneyPipe.Domain.UserAggregate.Entities
 
             if (errors.Count > 0) return errors;
         
-            return new EmailJob(id)
+            return new EmailJob(EmailJobId.CreateUnique(Guid.NewGuid()))
             {
                 Email = email,
                 Message = message,
@@ -42,6 +42,6 @@ namespace MoneyPipe.Domain.UserAggregate.Entities
             };
         }
 
-        internal void AddHTMLContent(string htmlContent) => HtmlContent = htmlContent;
+        public void AddHTMLContent(string htmlContent) => HtmlContent = htmlContent;
     }
 }

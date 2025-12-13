@@ -2,6 +2,7 @@ using ErrorOr;
 using MoneyPipe.Domain.Common.Errors;
 using MoneyPipe.Domain.Common.Models;
 using MoneyPipe.Domain.UserAggregate.Entities;
+using MoneyPipe.Domain.UserAggregate.Events;
 using MoneyPipe.Domain.UserAggregate.Models;
 using MoneyPipe.Domain.UserAggregate.ValueObjects;
 
@@ -30,10 +31,10 @@ namespace MoneyPipe.Domain.UserAggregate
         public PasswordResetToken? PasswordResetToken {get;private set;}
         public RefreshToken? RefreshToken {get;private set;}
 
-        public EmailJob EmailJob {get;private set;}
+        // public EmailJob EmailJob {get;private set;}
 
-        private readonly List<Notification> _notifications = [];
-        public IReadOnlyList<Notification> Notifications => _notifications.AsReadOnly();
+        // private readonly List<Notification> _notifications = [];
+        // public IReadOnlyList<Notification> Notifications => _notifications.AsReadOnly();
 
 
         public static ErrorOr<User> Create(UserRegisterData data)
@@ -62,6 +63,18 @@ namespace MoneyPipe.Domain.UserAggregate
             return user;
         }
 
+        public void AddUserRegisteredDomainEvent(string? clientURL)
+        {
+            AddDomainEvent(new UserRegisteredEvent(Id,Email,
+            EmailConfirmationToken!,FirstName,clientURL));
+        }
+
+        public void AddRequestedPasswordResetDomainEvent(string passwordResetToken,string? resetLink)
+        {
+            AddDomainEvent(new PasswordResetRequestedEvent(Id,Email,passwordResetToken,FirstName,
+            resetLink));
+        }
+
         public void MarkEmailConfirmed()
         {
             EmailConfirmed = true;
@@ -76,7 +89,7 @@ namespace MoneyPipe.Domain.UserAggregate
 
             if (result.IsError) return result.Errors;
 
-            this.PasswordResetToken = PasswordResetToken.Create(token, DateTime.UtcNow.AddHours(24), false, DateTime.UtcNow,Id);
+            PasswordResetToken = PasswordResetToken.Create(token, DateTime.UtcNow.AddHours(24),Id);
 
             return Result.Success;
         }
@@ -93,7 +106,8 @@ namespace MoneyPipe.Domain.UserAggregate
 
             if (result.IsError) return result.Errors;
 
-            this.PasswordResetToken = PasswordResetToken.Create(tokenObj.Token, tokenObj.ExpiresAt, true, tokenObj.CreatedAt,Id);
+            PasswordResetToken = tokenObj;
+            PasswordResetToken.MarkAsUsed();
 
             // new password required
             PasswordHash = newPasswordHash;
@@ -102,12 +116,12 @@ namespace MoneyPipe.Domain.UserAggregate
         }
 
 
-        public ErrorOr<DateTime> AddRefreshToken(string token,DateTime? revokedAt = null)
+        public ErrorOr<DateTime> AddRefreshToken(string token)
         {
             ErrorOr<Success> result = ValidateRefreshToken(token);
             if (result.IsError) return result.Errors;
             var tokenExpirationTime = DateTime.UtcNow.AddHours(1);
-            this.RefreshToken = RefreshToken.Create(token, tokenExpirationTime, revokedAt,DateTime.UtcNow,Id);
+            RefreshToken = RefreshToken.Create(token, tokenExpirationTime,Id);
             return tokenExpirationTime;
         }
 
@@ -120,32 +134,31 @@ namespace MoneyPipe.Domain.UserAggregate
             return Result.Success;
         }
 
-        public ErrorOr<Success> RevokeRefreshToken(RefreshToken tokenObj)
+        public void RevokeRefreshToken(RefreshToken tokenObj)
         {
-
-            this.RefreshToken = RefreshToken.Create(tokenObj.Token, tokenObj.ExpiresAt, DateTime.UtcNow,tokenObj.CreatedAt,Id);
-            return Result.Success;
+            RefreshToken = tokenObj;
+            RefreshToken.MarkAsRevoked();
         }
 
-        public Notification AddNotification(NotificationData notification)
-        {
-            var _notification = Notification.Create(NotificationId.CreateUnique(Guid.NewGuid()),
-            notification.Title,notification.Message,notification.MetadataJson,notification.Type);
+        // public Notification AddNotification(NotificationData notification)
+        // {
+        //     var _notification = Notification.Create(NotificationId.CreateUnique(Guid.NewGuid()),
+        //     notification.Title,notification.Message,notification.MetadataJson,notification.Type);
 
-            _notifications.Add(_notification);
-            return _notification;
-        }
+        //     _notifications.Add(_notification);
+        //     return _notification;
+        // }
 
-        public ErrorOr<Success> AddEmailJob(string subject,string message,string email)
-        {
-            var emailJobResult = EmailJob.Create(EmailJobId.CreateUnique(Guid.NewGuid()),
-                email,message,subject);
-            if (emailJobResult.IsError) return emailJobResult.Errors;
-            EmailJob = emailJobResult.Value;
+        // public ErrorOr<Success> AddEmailJob(string subject,string message,string email)
+        // {
+        //     var emailJobResult = EmailJob.Create(EmailJobId.CreateUnique(Guid.NewGuid()),
+        //         email,message,subject);
+        //     if (emailJobResult.IsError) return emailJobResult.Errors;
+        //     EmailJob = emailJobResult.Value;
 
-            return Result.Success;
-        }
+        //     return Result.Success;
+        // }
 
-        public void AddEmailJobHTMLContent(string htmlContent) => EmailJob.AddHTMLContent(htmlContent);
+        // public void AddEmailJobHTMLContent(string htmlContent) => EmailJob.AddHTMLContent(htmlContent);
     }
 }

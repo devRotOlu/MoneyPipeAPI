@@ -3,7 +3,6 @@ using MoneyPipe.Domain.Common.Errors;
 using MoneyPipe.Domain.Common.Models;
 using MoneyPipe.Domain.InvoiceAggregate.Entities;
 using MoneyPipe.Domain.InvoiceAggregate.Enums;
-using MoneyPipe.Domain.InvoiceAggregate.Events;
 using MoneyPipe.Domain.InvoiceAggregate.Models;
 using MoneyPipe.Domain.InvoiceAggregate.ValueObjects;
 using MoneyPipe.Domain.UserAggregate.ValueObjects;
@@ -31,6 +30,7 @@ namespace MoneyPipe.Domain.InvoiceAggregate
         public string? CustomerAddress { get; private set; } 
         public string? Notes { get; private set; }
         public string? PaymentUrl { get; private set; }
+        public string? PDFLink {get;set;}
         public IReadOnlyCollection<InvoiceItem> InvoiceItems => _invoiceItems.AsReadOnly(); 
 
         private Invoice(){}
@@ -145,7 +145,7 @@ namespace MoneyPipe.Domain.InvoiceAggregate
         {
             Status = InvoiceStatus.Sent.ToString();
             UpdatedAt = DateTime.UtcNow;
-            AddDomainEvent(new InvoiceCreatedEvent(this,UserId.Value,CustomerEmail));
+            IssueDate = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -173,5 +173,7 @@ namespace MoneyPipe.Domain.InvoiceAggregate
         }
 
         public void SetInvoiceNumber(int serialNumber) => InvoiceNumber = $"INV-{serialNumber:D6}";
+
+        public void SetPDFLink(string url)=> PDFLink = url;
     }
 }

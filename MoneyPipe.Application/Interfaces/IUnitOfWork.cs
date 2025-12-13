@@ -6,6 +6,8 @@ namespace MoneyPipe.Application.Interfaces
     {
         IUserWriteRepository Users { get; set; }
         IInvoiceWriteRepository Invoices {get;set;}
+        IEmailJobWriteRepository EmailJobs {get;set;}
+        IBackgroundJobWriteRepository BackgroundJobs {get;set;}
         void Commit();
         void Rollback();
     }

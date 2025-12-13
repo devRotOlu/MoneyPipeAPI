@@ -43,7 +43,7 @@ namespace MoneyPipe.API.Middleware
             );
 
             // Wrap it in your ApiResponse
-            var response = ApiResponse<object>.Fail(problemDetails!.Title, problemDetails);
+            var response = ApiResponse<object>.Fail(problemDetails!.Title!, problemDetails);
 
             // Serialize and write to response
             var json = JsonSerializer.Serialize(response, new JsonSerializerOptions

@@ -2,11 +2,16 @@ using MoneyPipe.Domain.Common.Models;
 
 namespace MoneyPipe.Domain.UserAggregate.ValueObjects
 {
-    public class EmailJobId(Guid value) : ValueObject
+    public sealed class PasswordRefreshTokenId: ValueObject
     {
-        public Guid Value { get; } = value;
+        public Guid Value { get;}
 
-        internal static EmailJobId CreateUnique(Guid id)
+        private PasswordRefreshTokenId(Guid value)
+        {
+            Value = value;
+        }
+
+        internal static PasswordRefreshTokenId CreateUnique(Guid id)
         {
             return new(id);
         }
@@ -16,4 +21,5 @@ namespace MoneyPipe.Domain.UserAggregate.ValueObjects
             yield return Value;
         }
     }
+        
 }

@@ -1,4 +1,4 @@
-using MoneyPipe.Domain.UserAggregate.Enums;
+using MoneyPipe.Domain.NotificationAggregate.Enums;
 
 namespace MoneyPipe.Domain.UserAggregate.Models
 {

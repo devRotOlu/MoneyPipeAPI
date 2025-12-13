@@ -1,6 +1,6 @@
+using MoneyPipe.Domain.NotificationAggregate;
 using MoneyPipe.Domain.UserAggregate;
 using MoneyPipe.Domain.UserAggregate.Entities;
-using MoneyPipe.Domain.UserAggregate.ValueObjects;
 
 namespace MoneyPipe.Application.Interfaces.Persistence.Reads
 {

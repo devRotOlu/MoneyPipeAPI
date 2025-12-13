@@ -7,7 +7,6 @@ namespace MoneyPipe.Application.Interfaces.Persistence.Writes
         Task CreateUserAsync(User user);
         Task AddRefreshTokenAsync(User user);
         Task RevokeRefreshTokenAsync(User user);
-        Task CreateEmailJobAsync(User user);
         Task MarkConfirmedEmail(User user);
         Task AddPasswordResetTokenAsync(User user);
         Task UpdateUserPassword(User user);

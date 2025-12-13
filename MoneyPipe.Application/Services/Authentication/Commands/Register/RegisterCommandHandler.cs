@@ -7,8 +7,10 @@ using MoneyPipe.Application.Common;
 using MoneyPipe.Application.Interfaces;
 using MoneyPipe.Application.Interfaces.IServices;
 using MoneyPipe.Application.Interfaces.Persistence.Reads;
+using MoneyPipe.Application.Services.Authentication.Notifications;
 using MoneyPipe.Domain.Common.Errors;
 using MoneyPipe.Domain.UserAggregate;
+using MoneyPipe.Domain.UserAggregate.Events;
 using MoneyPipe.Domain.UserAggregate.Models;
 
 
@@ -18,23 +20,23 @@ namespace MoneyPipe.Application.Services.Authentication.Commands.Register
     {
         public RegisterCommandHandler(IUnitOfWork unitOfWork,IMapper mapper,
         IUserReadRepository userQuery,ITokenService tokenService,
-        IEmailTemplateService emailTemplateService,IHttpContextAccessor httpContextAccessor,
-        IConfiguration configuration)
+        IHttpContextAccessor httpContextAccessor,
+        IConfiguration configuration,IPublisher mediatr)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _userQuery = userQuery;
             _tokenService = tokenService;
-            _emailTemplateService = emailTemplateService;
             _httpContextAccessor = httpContextAccessor;
             _configuration = configuration;
+            _mediatr = mediatr;
         }
 
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IPublisher _mediatr;
         private readonly IUserReadRepository _userQuery;
         private readonly ITokenService _tokenService;
-        private readonly IEmailTemplateService _emailTemplateService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IConfiguration _configuration;
 
@@ -52,17 +54,13 @@ namespace MoneyPipe.Application.Services.Authentication.Commands.Register
             if (result.IsError) return result.Errors;
 
             var user = result.Value;
-
             var clientURL = _httpContextAccessor.HttpContext.Request.GetClientURL(_configuration["EmailConfirmation"]!);
-
-            var emailOption = _emailTemplateService.BuildEmailConfirmationEmail(user.Id.Value.ToString(),user.FirstName,
-            user.EmailConfirmationToken!,user.Email,clientURL);
-
-            user.AddEmailJob(emailOption.Subject,emailOption.Message,emailOption.ToEmail);
-            user.AddEmailJobHTMLContent(emailOption.HtmlContent!);
+            user.AddUserRegisteredDomainEvent(clientURL);
             
             await _unitOfWork.Users.CreateUserAsync(user);
-            await _unitOfWork.Users.CreateEmailJobAsync(user);
+            foreach (var _event in user.DomainEvents)
+                await _mediatr.Publish(new UserRegisteredNotification((UserRegisteredEvent)_event),cancellationToken);
+            user.ClearDomainEvents();
             _unitOfWork.Commit();
 
             return Result.Success;

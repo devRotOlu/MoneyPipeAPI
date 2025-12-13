@@ -1,10 +1,10 @@
 using MoneyPipe.Domain.Common.Models;
-using MoneyPipe.Domain.UserAggregate.Enums;
-using MoneyPipe.Domain.UserAggregate.ValueObjects;
+using MoneyPipe.Domain.NotificationAggregate.Enums;
+using MoneyPipe.Domain.NotificationAggregate.ValueObjects;
 
-namespace MoneyPipe.Domain.UserAggregate.Entities
+namespace MoneyPipe.Domain.NotificationAggregate
 {
-    public sealed class Notification : Entity<NotificationId>
+    public sealed class Notification : AggregateRoot<NotificationId>
     {
         private Notification()
         {

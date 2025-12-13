@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoneyPipe.Infrastructure", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoneyPipe.Domain", "..\MoneyPipe.Domain\MoneyPipe.Domain.csproj", "{2F1B5DE4-B171-46FC-8436-C3BD44535E51}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoneyPipe.Workers", "..\MoneyPipe.Workers\MoneyPipe.Workers.csproj", "{862A9FDE-DDD1-433C-AB0F-44FA54E99AC4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,6 +39,10 @@ Global
 		{989C79F5-E47B-4545-991C-EDCB3AFE6F55}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{989C79F5-E47B-4545-991C-EDCB3AFE6F55}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{989C79F5-E47B-4545-991C-EDCB3AFE6F55}.Release|Any CPU.Build.0 = Release|Any CPU
+		{862A9FDE-DDD1-433C-AB0F-44FA54E99AC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{862A9FDE-DDD1-433C-AB0F-44FA54E99AC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{862A9FDE-DDD1-433C-AB0F-44FA54E99AC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{862A9FDE-DDD1-433C-AB0F-44FA54E99AC4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

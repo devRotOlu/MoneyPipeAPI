@@ -20,7 +20,12 @@ var app = builder.Build();
     {
         app.UseSwagger();
         app.UseSwaggerUI();
+    }else
+    {
+        app.UseHsts();   
     }
+
+    app.UseHttpsRedirection();
 
     app.UseStaticFiles();
 
@@ -31,7 +36,6 @@ var app = builder.Build();
 
     app.UseRouting();
     app.UseCors(CORSPolicy.Policy);
-    app.UseHttpsRedirection();
     app.UseAuthentication();
     app.UseAuthorization();
 

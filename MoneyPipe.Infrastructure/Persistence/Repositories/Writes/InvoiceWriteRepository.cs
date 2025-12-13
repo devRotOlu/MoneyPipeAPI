@@ -5,7 +5,8 @@ using MoneyPipe.Domain.InvoiceAggregate;
 
 namespace MoneyPipe.Infrastructure.Persistence.Repositories.Writes
 {
-    public class InvoiceWriteRepository(IDbConnection dbConnection, IDbTransaction transaction) : IInvoiceWriteRepository
+    public class InvoiceWriteRepository(IDbConnection dbConnection, IDbTransaction transaction) :
+     IInvoiceWriteRepository
     {
         private readonly IDbConnection _dbConnection = dbConnection;
         private readonly IDbTransaction _transaction = transaction;
@@ -53,7 +54,8 @@ namespace MoneyPipe.Infrastructure.Persistence.Repositories.Writes
                     customeraddress = @CustomerAddress,
                     notes = @Notes,
                     paymenturl = @PaymentUrl,
-                    updatedat = @UpdatedAt
+                    updatedat = @UpdatedAt,
+                    pdflink = @PDFLink
                 WHERE id = @Id;";
             await _dbConnection.ExecuteAsync(invoiceSql,invoice,_transaction);
 

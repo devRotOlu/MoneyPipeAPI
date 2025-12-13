@@ -85,10 +85,6 @@ namespace MoneyPipe.API.Configurations
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
-                //   .AddCookie(options =>
-                //     {
-                //         options.Cookie.Name = Token.AccessToken;
-                //     })
                .AddJwtBearer(options =>
                {
                    var jwtSettings = configuration.GetSection("Jwt");

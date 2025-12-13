@@ -2,19 +2,19 @@ using ErrorOr;
 using MediatR;
 using MoneyPipe.Application.Interfaces;
 using MoneyPipe.Application.Interfaces.Persistence.Reads;
-using MoneyPipe.Application.Services.Invoicing.Notifications;
 using MoneyPipe.Domain.Common.Errors;
-using MoneyPipe.Domain.InvoiceAggregate.Events;
+
 
 namespace MoneyPipe.Application.Services.Invoicing.Commands.SendInvoice
 {
-    public class SendInvoiceCommandHandler(IInvoiceReadRepository invoiceQuery, IUnitOfWork unitOfWork, IPublisher mediatr) :
+    public class SendInvoiceCommandHandler(IInvoiceReadRepository invoiceQuery, 
+    IUnitOfWork unitOfWork,IBackgroundJobQueue jobQueue) :
      IRequestHandler<SendInvoiceCommand, ErrorOr<Success>>
     {
         private readonly IInvoiceReadRepository _invoiceQuery = invoiceQuery;
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
-        private readonly IPublisher _mediatr = mediatr;
-
+        private readonly IBackgroundJobQueue _jobQueue = jobQueue;
+    
         public async Task<ErrorOr<Success>> Handle(SendInvoiceCommand request, CancellationToken cancellationToken)
         {
             var invoice = await _invoiceQuery.GetByIdAsync(request.InvoiceId);
@@ -24,12 +24,8 @@ namespace MoneyPipe.Application.Services.Invoicing.Commands.SendInvoice
             invoice.MarkSent();
 
             await _unitOfWork.Invoices.UpdateAsync(invoice);
+            await _jobQueue.EnqueueSendInvoiceAsync(invoice.Id);
             _unitOfWork.Commit();
-
-            foreach (var _event in invoice.DomainEvents)
-                await _mediatr.Publish(new InvoiceCreatedNotification((InvoiceCreatedEvent)_event), cancellationToken);
-
-            invoice.ClearDomainEvents();
 
             return Result.Success;
         }

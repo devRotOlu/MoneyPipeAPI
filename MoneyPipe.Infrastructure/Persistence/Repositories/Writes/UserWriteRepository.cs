@@ -12,8 +12,6 @@ namespace MoneyPipe.Infrastructure.Persistence.Repositories.Writes
         private readonly string _userTable = "Users";
         private readonly string _refreshTokenTable = "RefreshTokens";
         private readonly string _resetTokenTable = "PasswordResetTokens";
-        private readonly string _notificationTable = "Notifications";
-        private readonly string _emailJobTable = "EmailJobs";
 
         public async Task CreateUserAsync(User user)
         {
@@ -78,16 +76,6 @@ namespace MoneyPipe.Infrastructure.Persistence.Repositories.Writes
                 WHERE token = @Token AND userid = @UserId;
             ";
             await _dbConnection.ExecuteAsync(sql,user.RefreshToken,_transaction);
-        }
-
-        public async Task CreateEmailJobAsync(User user)
-        {
-            var sql= @$"
-            INSERT INTO {_emailJobTable} (id, email, subject, message,
-            status, attempts, createdat, updatedat,htmlcontent)
-            VALUES (@Id, @Email, @Subject,@Message,@Status, 
-            @Attempts,@CreatedAt,@UpdatedAt,@HtmlContent);";
-            await _dbConnection.ExecuteAsync(sql, user.EmailJob, _transaction);
         }
     }
 }

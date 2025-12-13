@@ -1,9 +1,9 @@
 using System.Data;
 using Dapper;
 using MoneyPipe.Application.Interfaces.Persistence.Reads;
+using MoneyPipe.Domain.NotificationAggregate;
 using MoneyPipe.Domain.UserAggregate;
 using MoneyPipe.Domain.UserAggregate.Entities;
-using MoneyPipe.Domain.UserAggregate.ValueObjects;
 
 namespace MoneyPipe.Infrastructure.Persistence.Repositories.Reads
 {

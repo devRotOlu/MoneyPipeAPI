@@ -1,4 +1,4 @@
-namespace MoneyPipe.Domain.UserAggregate.Enums
+namespace MoneyPipe.Domain.NotificationAggregate.Enums
 {
     public enum NotificationType
     {

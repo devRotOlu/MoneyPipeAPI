@@ -1,4 +1,4 @@
-using MoneyPipe.Domain.UserAggregate.ValueObjects;
+using MoneyPipe.Domain.EmailJobAggregate.ValueObjects;
 
 namespace MoneyPipe.Infrastructure.Persistence.Configurations.IdTypeHandlers
 {
