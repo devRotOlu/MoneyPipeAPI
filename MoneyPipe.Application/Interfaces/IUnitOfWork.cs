@@ -1,4 +1,5 @@
 ﻿using MoneyPipe.Application.Interfaces.Persistence.Writes;
+using MoneyPipe.Domain.Common.Interfaces;
 
 namespace MoneyPipe.Application.Interfaces
 {
@@ -8,7 +9,9 @@ namespace MoneyPipe.Application.Interfaces
         IInvoiceWriteRepository Invoices {get;set;}
         IEmailJobWriteRepository EmailJobs {get;set;}
         IBackgroundJobWriteRepository BackgroundJobs {get;set;}
-        void Commit();
+        IWalletWriteRepository Wallets {get;set;}
+        Task Commit();
         void Rollback();
+        Task RegisterAggregateAsync(IAggregateRoot aggregate);
     }
 }

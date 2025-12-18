@@ -7,10 +7,8 @@ using MoneyPipe.Application.Common;
 using MoneyPipe.Application.Interfaces;
 using MoneyPipe.Application.Interfaces.IServices;
 using MoneyPipe.Application.Interfaces.Persistence.Reads;
-using MoneyPipe.Application.Services.Authentication.Notifications;
 using MoneyPipe.Domain.Common.Errors;
 using MoneyPipe.Domain.UserAggregate;
-using MoneyPipe.Domain.UserAggregate.Events;
 using MoneyPipe.Domain.UserAggregate.Models;
 
 
@@ -21,7 +19,7 @@ namespace MoneyPipe.Application.Services.Authentication.Commands.Register
         public RegisterCommandHandler(IUnitOfWork unitOfWork,IMapper mapper,
         IUserReadRepository userQuery,ITokenService tokenService,
         IHttpContextAccessor httpContextAccessor,
-        IConfiguration configuration,IPublisher mediatr)
+        IConfiguration configuration)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -29,12 +27,10 @@ namespace MoneyPipe.Application.Services.Authentication.Commands.Register
             _tokenService = tokenService;
             _httpContextAccessor = httpContextAccessor;
             _configuration = configuration;
-            _mediatr = mediatr;
         }
 
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IPublisher _mediatr;
         private readonly IUserReadRepository _userQuery;
         private readonly ITokenService _tokenService;
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -58,10 +54,8 @@ namespace MoneyPipe.Application.Services.Authentication.Commands.Register
             user.AddUserRegisteredDomainEvent(clientURL);
             
             await _unitOfWork.Users.CreateUserAsync(user);
-            foreach (var _event in user.DomainEvents)
-                await _mediatr.Publish(new UserRegisteredNotification((UserRegisteredEvent)_event),cancellationToken);
-            user.ClearDomainEvents();
-            _unitOfWork.Commit();
+            await _unitOfWork.RegisterAggregateAsync(user);
+            await _unitOfWork.Commit();
 
             return Result.Success;
         }

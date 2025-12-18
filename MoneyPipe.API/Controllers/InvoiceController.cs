@@ -7,6 +7,7 @@ using MoneyPipe.API.DTOs.Requests;
 using MoneyPipe.API.DTOs.Responses;
 using MoneyPipe.Application.Services.Invoicing.Commands.CreateInvoice;
 using MoneyPipe.Application.Services.Invoicing.Commands.EditInvoice;
+using MoneyPipe.Application.Services.Invoicing.Commands.SendInvoice;
 using MoneyPipe.Application.Services.Invoicing.Common;
 using MoneyPipe.Application.Services.Invoicing.Queries.GetInvoice;
 using MoneyPipe.Application.Services.Invoicing.Queries.GetInvoices;
@@ -17,7 +18,7 @@ namespace MoneyPipe.API.Controllers
     [Route("api/[controller]")]
     public class InvoiceController(ISender mediatr,IMapper mapper): APIController
     {
-         private readonly ISender _mediatr = mediatr;
+        private readonly ISender _mediatr = mediatr;
         private readonly IMapper _mapper = mapper;
 
         [HttpPost("create-invoice")]
@@ -66,6 +67,17 @@ namespace MoneyPipe.API.Controllers
                 },
                 Problem
             );
-        }   
+        } 
+
+        [HttpPost("send-invoice")]
+        public async Task<IActionResult> SendInvoice([FromQuery] Guid invoiceId)
+        {
+            var command = new SendInvoiceCommand(invoiceId);
+            ErrorOr<Success> result = await _mediatr.Send(command);
+            return result.Match(
+                success => Ok(ApiResponse<object>.Ok(null,"Invoice Sent")),
+                Problem
+            );
+        }  
     }
 }

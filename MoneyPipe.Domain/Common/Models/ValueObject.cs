@@ -1,6 +1,6 @@
 namespace MoneyPipe.Domain.Common.Models
 {
-        public abstract class ValueObject:IEquatable<ValueObject>
+    public abstract class ValueObject:IEquatable<ValueObject>
     {
         protected abstract IEnumerable<object> GetEqualityComponents();
 

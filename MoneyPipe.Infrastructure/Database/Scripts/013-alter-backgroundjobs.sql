@@ -1,0 +1,2 @@
+ALTER TABLE BackgroundJobs
+ADD COLUMN InvoiceId UUID NOT NULL;

@@ -1,4 +1,3 @@
-using MoneyPipe.Domain.BackgroundJobAggregate.Enums;
 using MoneyPipe.Domain.BackgroundJobAggregate.ValueObjects;
 using MoneyPipe.Domain.Common.Models;
 using MoneyPipe.Domain.InvoiceAggregate.ValueObjects;
@@ -9,7 +8,7 @@ namespace MoneyPipe.Domain.BackgroundJobAggregate
     {
         public string Type { get; private set; } = null!;
         public InvoiceId InvoiceId { get; private set; } = null!;
-        public string Status { get; private set; } = StatusTypes.Pending.ToString();
+        public bool IsCompleted { get; private set; } = false;
         public int Attempts { get; private set; } = 0;
         public DateTime CreatedAt { get; private set; }
         public DateTime UpdatedAt { get; private set; }
@@ -35,9 +34,9 @@ namespace MoneyPipe.Domain.BackgroundJobAggregate
             };
         } 
 
-        public void UpdateStatus(StatusTypes status)
+        public void MarkCompleted(bool iscompleted)
         {
-            Status = status.ToString();
+            IsCompleted = iscompleted;
             Attempts = ++Attempts;
             UpdatedAt = DateTime.UtcNow;
         }

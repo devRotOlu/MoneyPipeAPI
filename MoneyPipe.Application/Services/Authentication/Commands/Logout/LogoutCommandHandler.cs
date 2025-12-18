@@ -25,7 +25,7 @@ namespace MoneyPipe.Application.Services.Authentication.Commands.Logout
             user!.RevokeRefreshToken(storedToken);
 
             await _unitofWork.Users.RevokeRefreshTokenAsync(user);
-            _unitofWork.Commit();
+            await _unitofWork.Commit();
             
             return Result.Success;
         }

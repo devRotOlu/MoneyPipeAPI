@@ -1,5 +1,3 @@
-
-
 using MoneyPipe.Application.Interfaces.IServices;
 using MoneyPipe.Domain.InvoiceAggregate;
 using QuestPDF.Fluent;

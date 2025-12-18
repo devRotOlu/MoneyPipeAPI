@@ -1,0 +1,2 @@
+ALTER TABLE Invoices
+ADD COLUMN PdfLink TEXT;

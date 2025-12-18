@@ -29,7 +29,7 @@ namespace MoneyPipe.Application.Services.Authentication.Commands.PasswordReset
 
             await _unitofWork.Users.UpdateUserPassword(user);
             await _unitofWork.Users.MarkPasswordResetTokenAsUsedAsync(user);
-            _unitofWork.Commit();
+            await _unitofWork.Commit();
 
             return Result.Success;
         }

@@ -1,13 +1,14 @@
-﻿using CloudinaryDotNet;
-using Dapper;
+﻿using Dapper;
 using DbUp;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MoneyPipe.Application.Interfaces;
+using MoneyPipe.Application.Interfaces.IServices;
 using MoneyPipe.Application.Interfaces.Persistence.Reads;
 using MoneyPipe.Infrastructure.Persistence;
 using MoneyPipe.Infrastructure.Persistence.Configurations.IdTypeHandlers;
 using MoneyPipe.Infrastructure.Persistence.Repositories.Reads;
+using MoneyPipe.Infrastructure.Storage;
 using Npgsql;
 using System.Data;
 using System.Reflection;
@@ -25,9 +26,10 @@ namespace MoneyPipe.Infrastructure
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IUserReadRepository,UserReadRepository>();
             services.AddScoped<IInvoiceReadRepository,InvoiceReadRepository>();
+            services.AddScoped<IWalletReadRepository,WalletReadRepository>();
             services.AddScoped<IBackgroundJobReadRepository,BackgroundJobReadRepository>();
-            services.AddScoped<ICloudinary,Cloudinary>();
-            services.AddSingleton<IBackgroundJobQueue, BackgroundJobQueue>();
+            services.AddSingleton<ICloudinaryService,CloudinaryService>();
+            services.AddScoped<IBackgroundJobQueue, BackgroundJobQueue>();
 
             services.RegisterAllEntityIdTypeHandlers();
 

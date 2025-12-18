@@ -1,6 +1,8 @@
+using MoneyPipe.Domain.Common.Interfaces;
+
 namespace MoneyPipe.Domain.Common.Models
 {
-    public abstract class AggregateRoot<TId> : Entity<TId> where TId: notnull
+    public abstract class AggregateRoot<TId> : Entity<TId> , IAggregateRoot where TId: notnull
     {
         protected AggregateRoot(TId id):base(id)
         {
@@ -23,6 +25,11 @@ namespace MoneyPipe.Domain.Common.Models
         public void ClearDomainEvents()
         {
             _domainEvents.Clear();
+        }
+
+        void IAggregateRoot.AddDomainEvent(object eventItem)
+        {
+            AddDomainEvent(eventItem);
         }
     }
 

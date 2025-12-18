@@ -24,7 +24,7 @@ namespace MoneyPipe.Application.Services.Authentication.Commands.ConfirmUser
             user.MarkEmailConfirmed();
 
             await _unitofWork.Users.MarkConfirmedEmail(user);
-            _unitofWork.Commit();
+            await _unitofWork.Commit();
 
             return Result.Success;
         }

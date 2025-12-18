@@ -40,7 +40,7 @@ namespace MoneyPipe.Application.Services.Invoicing.Commands.EditInvoice
             editedInvoice.SetUserId(Guid.Parse(userId));
     
             await _unitofWork.Invoices.UpdateAsync(editedInvoice);
-            _unitofWork.Commit();
+            await _unitofWork.Commit();
 
             var invoiceResult = _mapper.Map<InvoiceResult>(editedInvoice);
 

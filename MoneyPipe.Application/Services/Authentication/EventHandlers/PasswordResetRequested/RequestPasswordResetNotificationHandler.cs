@@ -1,17 +1,19 @@
 using MediatR;
+using MoneyPipe.Application.Common.Events;
 using MoneyPipe.Application.Interfaces;
 using MoneyPipe.Application.Interfaces.IServices;
-using MoneyPipe.Application.Services.Authentication.Notifications;
 using MoneyPipe.Domain.EmailJobAggregate;
+using MoneyPipe.Domain.UserAggregate.Events;
 
-namespace MoneyPipe.Application.Services.Authentication.Commands.RequestPasswordReset
+namespace MoneyPipe.Application.Services.Authentication.EventHandlers.PasswordResetRequested
 {
     class RequestPasswordResetNotificationHandler(IEmailTemplateService emailTemplateService,
-     IUnitOfWork unitOfWork) : INotificationHandler<RequestPasswordResetNotification>
+     IUnitOfWork unitOfWork) : INotificationHandler<DomainEventNotification<PasswordResetRequestedEvent>>
     {
         private readonly IEmailTemplateService _emailTemplateService = emailTemplateService;
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
-        public async Task Handle(RequestPasswordResetNotification notification, CancellationToken cancellationToken)
+
+        public async Task Handle(DomainEventNotification<PasswordResetRequestedEvent> notification, CancellationToken cancellationToken)
         {
             var domainEvent = notification.DomainEvent;
             var userId = domainEvent.UserId.Value.ToString();

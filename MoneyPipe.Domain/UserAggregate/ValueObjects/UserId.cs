@@ -11,12 +11,12 @@ namespace MoneyPipe.Domain.UserAggregate.ValueObjects
             Value = value;
         }
 
-        internal static UserId CreateUnique()
+        public static UserId CreateUnique()
         {
             return new(Guid.NewGuid());
         }
 
-        internal static UserId CreateUnique(Guid id)
+        public static UserId CreateUnique(Guid id)
         {
             return new(id);
         }

@@ -48,7 +48,7 @@ namespace MoneyPipe.Application.Services.Authentication.Commands.Login
             _tokenService.SetTokenInCookies(user,refreshToken,refreshTokenExpirationTime,_httpContextAccessor.HttpContext);
 
             await _unitOfWork.Users.AddRefreshTokenAsync(user);
-            _unitOfWork.Commit();
+            await _unitOfWork.Commit();
 
             var loginResult = _mapper.Map<AuthenticationResult>(user);
 

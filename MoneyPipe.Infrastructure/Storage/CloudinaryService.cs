@@ -28,9 +28,11 @@ namespace MoneyPipe.Infrastructure.Storage
 
             var uploadParams = new RawUploadParams
             {
-                File = new FileDescription(fileName, stream),
-                PublicId = fileName,        
+                File = new FileDescription(fileName + ".pdf", stream),
+                PublicId = fileName,       
                 Overwrite = true,
+                Folder = "invoices",
+                AccessMode = "public"
             };
 
             RawUploadResult uploadResult = await _cloudinary.UploadAsync(uploadParams);

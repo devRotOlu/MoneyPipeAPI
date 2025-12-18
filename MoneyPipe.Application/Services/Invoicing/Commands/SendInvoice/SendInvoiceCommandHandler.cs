@@ -25,7 +25,7 @@ namespace MoneyPipe.Application.Services.Invoicing.Commands.SendInvoice
 
             await _unitOfWork.Invoices.UpdateAsync(invoice);
             await _jobQueue.EnqueueSendInvoiceAsync(invoice.Id);
-            _unitOfWork.Commit();
+            await _unitOfWork.Commit();
 
             return Result.Success;
         }

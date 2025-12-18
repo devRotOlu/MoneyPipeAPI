@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MoneyPipe.Application.Interfaces.IServices;
 using MoneyPipe.Application.Mapping;
 using MoneyPipe.Application.Services;
+using QuestPDF.Infrastructure;
 
 namespace MoneyPipe.Application
 {
@@ -13,13 +14,14 @@ namespace MoneyPipe.Application
         {
             services.AddHttpContextAccessor();
             
-            services.AddScoped<ITokenService,TokenService>();
-            services.AddScoped<IEmailTemplateService,EmailTemplateService>();
-            services.AddScoped<IInvoicePdfGenerator,InvoicePdfGenerator>();
+            services.AddSingleton<ITokenService,TokenService>();
+            services.AddSingleton<IEmailTemplateService,EmailTemplateService>();
+            services.AddSingleton<IInvoicePdfGenerator,InvoicePdfGenerator>();
 
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
             services.AddAutoMapper(typeof(ApplicationMappingProfile));
 
+            QuestPDF.Settings.License = LicenseType.Community;
             return services;
         }
     }

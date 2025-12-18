@@ -32,7 +32,7 @@ namespace MoneyPipe.Application.Services.Authentication.Commands.RefreshToken
         {
             var oldRefreshToken = _tokenService.RetrieveOldRefreshToken(_httpContextAccessor.HttpContext);
             var stored = await _userQuery.GetRefreshTokenByTokenAsync(oldRefreshToken);
-            if (stored == null || stored.RevokedAt != null || stored.ExpiresAt.CompareTo(DateTime.UtcNow) <= 0)
+            if (stored is null || stored.RevokedAt != null || stored.ExpiresAt.CompareTo(DateTime.UtcNow) <= 0)
                 return Errors.RefreshToken.InvalidToken;
 
             var user = await _userQuery.GetUserByIdAsync(stored.UserId.Value);
@@ -40,7 +40,7 @@ namespace MoneyPipe.Application.Services.Authentication.Commands.RefreshToken
 
             // rotate refresh token: revoke old, create new
             await _unitOfWork.Users.RevokeRefreshTokenAsync(user);
-            _unitOfWork.Commit();
+            await _unitOfWork.Commit();
 
             var authResult = _mapper.Map<AuthenticationResult>(user);
 

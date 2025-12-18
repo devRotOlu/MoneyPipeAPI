@@ -31,12 +31,6 @@ namespace MoneyPipe.Domain.UserAggregate
         public PasswordResetToken? PasswordResetToken {get;private set;}
         public RefreshToken? RefreshToken {get;private set;}
 
-        // public EmailJob EmailJob {get;private set;}
-
-        // private readonly List<Notification> _notifications = [];
-        // public IReadOnlyList<Notification> Notifications => _notifications.AsReadOnly();
-
-
         public static ErrorOr<User> Create(UserRegisterData data)
         {
             var errors = new List<Error>();
@@ -139,26 +133,5 @@ namespace MoneyPipe.Domain.UserAggregate
             RefreshToken = tokenObj;
             RefreshToken.MarkAsRevoked();
         }
-
-        // public Notification AddNotification(NotificationData notification)
-        // {
-        //     var _notification = Notification.Create(NotificationId.CreateUnique(Guid.NewGuid()),
-        //     notification.Title,notification.Message,notification.MetadataJson,notification.Type);
-
-        //     _notifications.Add(_notification);
-        //     return _notification;
-        // }
-
-        // public ErrorOr<Success> AddEmailJob(string subject,string message,string email)
-        // {
-        //     var emailJobResult = EmailJob.Create(EmailJobId.CreateUnique(Guid.NewGuid()),
-        //         email,message,subject);
-        //     if (emailJobResult.IsError) return emailJobResult.Errors;
-        //     EmailJob = emailJobResult.Value;
-
-        //     return Result.Success;
-        // }
-
-        // public void AddEmailJobHTMLContent(string htmlContent) => EmailJob.AddHTMLContent(htmlContent);
     }
 }

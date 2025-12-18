@@ -38,6 +38,27 @@ namespace MoneyPipe.Application.Services
             return options;
         }
 
+        public UserEmailOptions BuildInvoiceDeliveryEmail(string name,string email,
+        string invoiceNumber,string pdfLink)
+        {
+            string? appName = _configuration["AppName"]; 
+
+            UserEmailOptions options = new()
+            {
+                ToEmail = email,
+                PlaceHolders = [
+                    new ("{{AppName}}",appName!),
+                    new ("{{CustomerName}}",name),
+                    new("{{InvoiceNumber}}",invoiceNumber),
+                    new ("{{PDFLink}}",pdfLink)
+                ],
+                Subject = @$"Invoice {invoiceNumber}"
+            };
+            options.HtmlContent = UpdatePlaceholders(GetEmailBody("InvoiceDeliveryPage"), options.PlaceHolders);
+            options.Message = ConvertHtmlToPlainText(options.HtmlContent);
+            return options;
+        }
+
         public UserEmailOptions BuildEmailConfirmationEmail(string id, string username, string token,string email, string? emailConfirmationLink = null)
         {
             string? appName = _configuration["AppName"]; 

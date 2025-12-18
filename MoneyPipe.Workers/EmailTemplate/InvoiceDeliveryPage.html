@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Invoice {{InvoiceNumber}}</title>
+  </head>
+  <body style="margin:0; padding:0; font-family: Arial, sans-serif; background-color:#f5f5f5;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f5f5f5; padding:20px 0;">
+      <tr>
+        <td align="center">
+          <table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff; padding:24px; border-radius:4px;">
+
+            <tr>
+              <td style="font-size:14px; color:#333333; padding-bottom:12px;">
+                Hi {{CustomerName}},
+              </td>
+            </tr>
+
+            <tr>
+              <td style="font-size:14px; color:#333333; padding-bottom:16px;">
+                Your invoice is ready.
+              </td>
+            </tr>
+
+            <tr>
+              <td style="font-size:14px; color:#333333; padding-bottom:8px;">
+                Download your invoice here:
+              </td>
+            </tr>
+
+            <tr>
+              <td style="font-size:14px; color:#333333; padding-bottom:24px;">
+                <a href="{{PDFLink}}"
+                   style="color:#ffffff; background-color:#007bff; text-decoration:none; padding:10px 16px; border-radius:4px; display:inline-block;">
+                  Download Invoice (PDF)
+                </a>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="font-size:14px; color:#333333;">
+                Thanks,<br />
+                {{AppName}}
+              </td>
+            </tr>
+
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

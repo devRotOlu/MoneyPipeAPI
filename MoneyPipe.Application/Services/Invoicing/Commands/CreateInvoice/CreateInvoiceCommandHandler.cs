@@ -38,7 +38,7 @@ namespace MoneyPipe.Application.Services.Invoicing.Commands.CreateInvoice
             invoice.SetUserId(Guid.Parse(userId));
 
             await _unitofWork.Invoices.InsertAsync(invoice);
-            _unitofWork.Commit();
+            await _unitofWork.Commit();
 
             var invoiceResult = _mapper.Map<InvoiceResult>(invoice);
 
