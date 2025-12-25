@@ -6,9 +6,11 @@ using MoneyPipe.Application.Interfaces;
 using MoneyPipe.Application.Interfaces.IServices;
 using MoneyPipe.Application.Interfaces.Persistence.Reads;
 using MoneyPipe.Infrastructure.Persistence;
-using MoneyPipe.Infrastructure.Persistence.Configurations.IdTypeHandlers;
 using MoneyPipe.Infrastructure.Persistence.Repositories.Reads;
+using MoneyPipe.Infrastructure.Services;
 using MoneyPipe.Infrastructure.Storage;
+using MoneyPipe.Infrastructure.TypeHandlers;
+using MoneyPipe.Infrastructure.TypeHandlers.IdTypeHandlers;
 using Npgsql;
 using System.Data;
 using System.Reflection;
@@ -30,9 +32,15 @@ namespace MoneyPipe.Infrastructure
             services.AddScoped<IBackgroundJobReadRepository,BackgroundJobReadRepository>();
             services.AddSingleton<ICloudinaryService,CloudinaryService>();
             services.AddScoped<IBackgroundJobQueue, BackgroundJobQueue>();
-
+            services.AddScoped<IVirtualAccountProcessor,PaystackVirtualAccountProcessor>();
+            services.AddScoped<IVirtualAccountProcessor,FlutterwaveVirtualAccountProcessor>();
+            services.AddScoped<PaystackVirtualAccountProvisioner>();
+            services.AddScoped<FlutterWaveVirtualAccountProvisioner>();
+            services.AddSingleton<IVirtualAccountProvisionerFactory,VirtualAccountProvisionerFactory>();
+            
+            services.AddHttpClient();
             services.RegisterAllEntityIdTypeHandlers();
-
+            SqlMapper.AddTypeHandler(new JsonDocumentHandler());
             return services;
         }
 

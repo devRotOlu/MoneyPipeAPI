@@ -38,6 +38,7 @@ namespace MoneyPipe.Domain.Common.Models
             if (left is null || right is null) return true;   
             return !left.Equals(right);                      
         }
+        
 
 
         public bool Equals(ValueObject? other) => Equals((object?) other);

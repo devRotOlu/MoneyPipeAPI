@@ -9,6 +9,7 @@ using MoneyPipe.Application.Services.Invoicing.Commands.CreateInvoice;
 using MoneyPipe.Application.Services.Invoicing.Commands.EditInvoice;
 using MoneyPipe.Application.Services.Invoicing.Common;
 using MoneyPipe.Application.Services.Invoicing.Queries.GetInvoices;
+using MoneyPipe.Application.Services.Wallet.Commands.CreateWallet;
 
 namespace MoneyPipe.API.Mapping
 {
@@ -28,6 +29,7 @@ namespace MoneyPipe.API.Mapping
             CreateMap<EditInvoiceItemDTO,EditInvoiceItem>();
             CreateMap<GetInvoicesResult,GetInvoicesDTO>();
             CreateMap<InvoiceResult,GetInvoiceBase>();
+            CreateMap<WalletResult,GetWalletDTO>();
         }
     }
 }

@@ -9,9 +9,10 @@ namespace MoneyPipe.Domain.WalletAggregate.Entities
     public class VirtualAccount:Entity<VirtualAccountId>
     {
         public WalletId WalletId { get; private set; } = null!;
-       
         public string BankName { get; private set;}
         public string AccountName { get; private set;}
+        public string ProviderName {get;private set;}
+        public string ProviderAccountId { get; private set; }
         public bool IsActive {get; private set;} =  true;
         public DateTime CreatedAt {get; private set;} = DateTime.UtcNow;
         public DateTime UpdatedAt {get; private set;} = DateTime.UtcNow;
@@ -37,12 +38,14 @@ namespace MoneyPipe.Domain.WalletAggregate.Entities
 
             if (errors.Count != 0) return errors;
 
-            return new VirtualAccount(VirtualAccountId.CreateUnique(Guid.NewGuid()))
+            return new VirtualAccount(data.Id)
             {
                 WalletId = walletId,
                 BankName = data.BankName,
                 AccountName = data.AccountName,
-                Currency = data.Currency
+                Currency = data.Currency,
+                ProviderAccountId = data.ProviderAccountId,
+                ProviderName = data.ProviderName
             };
         } 
 

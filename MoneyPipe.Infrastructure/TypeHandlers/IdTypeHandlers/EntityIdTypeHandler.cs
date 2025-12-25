@@ -1,7 +1,7 @@
 using System.Data;
 using Dapper;
 
-namespace MoneyPipe.Infrastructure.Persistence.Configurations.IdTypeHandlers
+namespace MoneyPipe.Infrastructure.TypeHandlers.IdTypeHandlers
 {
     public abstract class EntityIdTypeHandler<TStrong,TRaw>:SqlMapper.TypeHandler<TStrong>
     {

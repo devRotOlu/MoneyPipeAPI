@@ -1,6 +1,6 @@
 using MoneyPipe.Domain.UserAggregate.ValueObjects;
 
-namespace MoneyPipe.Infrastructure.Persistence.Configurations.IdTypeHandlers
+namespace MoneyPipe.Infrastructure.TypeHandlers.IdTypeHandlers
 {
     public sealed class UserIdTypeHandler : EntityIdTypeHandler<UserId, Guid>
     {

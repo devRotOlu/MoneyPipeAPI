@@ -1,6 +1,6 @@
 using MoneyPipe.Domain.InvoiceAggregate.ValueObjects;
 
-namespace MoneyPipe.Infrastructure.Persistence.Configurations.IdTypeHandlers
+namespace MoneyPipe.Infrastructure.TypeHandlers.IdTypeHandlers
 {
     public sealed class InvoiceIdTypeHandler : EntityIdTypeHandler<InvoiceId, Guid>
     {

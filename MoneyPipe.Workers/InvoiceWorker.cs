@@ -1,7 +1,9 @@
+using System.Text.Json;
 using MoneyPipe.Application.Common;
 using MoneyPipe.Application.Interfaces;
 using MoneyPipe.Application.Interfaces.IServices;
 using MoneyPipe.Application.Interfaces.Persistence.Reads;
+using MoneyPipe.Application.Models;
 using MoneyPipe.Domain.BackgroundJobAggregate;
 using MoneyPipe.Domain.EmailJobAggregate;
 using MoneyPipe.Domain.InvoiceAggregate;
@@ -62,7 +64,7 @@ namespace MoneyPipe.Workers
                             invoice.SetPDFLink(pdfUrl);
 
                             await uow.Invoices.UpdateAsync(invoice);
-                            uow.Commit();
+                            await uow.Commit();
                         }
 
                         await MarkJobCompleted(job, invoice);
@@ -95,7 +97,7 @@ namespace MoneyPipe.Workers
             var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
             job.MarkCompleted(false);
             await uow.BackgroundJobs.UpdateBackgroundJobAsync(job);
-            uow.Commit();
+            await uow.Commit();
         }
 
         private async Task MarkJobCompleted(BackgroundJob job, Invoice invoice)
@@ -119,7 +121,7 @@ namespace MoneyPipe.Workers
             job.MarkCompleted(true);
             await uow.BackgroundJobs.UpdateBackgroundJobAsync(job);
 
-            uow.Commit();
+            await uow.Commit();
         }
 
         private async Task<Invoice?> FetchInvoice(BackgroundJob job)
@@ -128,10 +130,13 @@ namespace MoneyPipe.Workers
             using (var scope = _serviceProvider.CreateScope())
             {
                 var readRepo = scope.ServiceProvider.GetRequiredService<IInvoiceReadRepository>();
-                invoice = await readRepo.GetByIdAsync(job.InvoiceId.Value);
-
-                if (invoice is null)
-                    throw new Exception("Invoice not found");
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                };
+                var invoicePayload = JsonSerializer.Deserialize<InvoiceJobPayload>(job.Payload!,options);
+                var invoiceId = Guid.Parse(invoicePayload!.InvoiceId);
+                invoice = await readRepo.GetByIdAsync(invoiceId) ?? throw new Exception("Invoice not found");
             }
 
             return invoice;

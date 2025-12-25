@@ -3,6 +3,7 @@ using Dapper;
 using MoneyPipe.Application.Interfaces.Persistence.Reads;
 using MoneyPipe.Domain.UserAggregate.ValueObjects;
 using MoneyPipe.Domain.WalletAggregate;
+using MoneyPipe.Domain.WalletAggregate.ValueObjects;
 
 namespace MoneyPipe.Infrastructure.Persistence.Repositories.Reads
 {
@@ -10,6 +11,12 @@ namespace MoneyPipe.Infrastructure.Persistence.Repositories.Reads
     {
         private readonly IDbConnection _dbConnection = dbConnection;
         private readonly string _walletTable = "Wallets";
+
+        public async Task<Wallet?> GetWallet(WalletId id)
+        {
+            var sql = @$"SELECT * from {_walletTable} where id = @Id";
+            return await _dbConnection.QueryFirstOrDefaultAsync<Wallet>(sql, new { Id = id});
+        }
 
         public  async Task<IEnumerable<Wallet>> GetWallets(UserId userId)
         {

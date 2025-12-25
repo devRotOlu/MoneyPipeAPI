@@ -2,6 +2,7 @@ using ErrorOr;
 using MoneyPipe.Domain.Common.Errors;
 using MoneyPipe.Domain.UserAggregate.ValueObjects;
 using MoneyPipe.Domain.WalletAggregate;
+using MoneyPipe.Domain.WalletAggregate.ValueObjects;
 
 namespace MoneyPipe.Domain.Services
 {
@@ -13,7 +14,9 @@ namespace MoneyPipe.Domain.Services
 
             if (walletExits) return Errors.Wallet.AlreadyExists;
 
-            var result = Wallet.Create(userId,currency);
+            var idResult = WalletId.CreateUnique(Guid.NewGuid());
+
+            var result = Wallet.Create(idResult.Value,userId,currency);
 
             if (result.IsError) return result.Errors;
 

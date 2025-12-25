@@ -1,0 +1,10 @@
+CREATE TABLE Wallets (
+    Id UUID PRIMARY KEY,
+    UserId UUID NOT NULL,
+    Currency CHAR(3) NOT NULL,
+    IsActive BOOLEAN NOT NULL DEFAULT True,
+    Balance DECIMAL(18,4) NOT NULL DEFAULT 0,
+    CreatedAt TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UpdatedAt TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT unique_user_currency UNIQUE (UserId, Currency)
+)

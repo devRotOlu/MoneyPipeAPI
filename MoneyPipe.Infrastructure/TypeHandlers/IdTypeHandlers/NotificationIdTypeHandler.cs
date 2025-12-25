@@ -1,6 +1,6 @@
 using MoneyPipe.Domain.NotificationAggregate.ValueObjects;
 
-namespace MoneyPipe.Infrastructure.Persistence.Configurations.IdTypeHandlers
+namespace MoneyPipe.Infrastructure.TypeHandlers.IdTypeHandlers
 {
     public sealed class NotificationIdTypeHandler : EntityIdTypeHandler<NotificationId, Guid>
     {

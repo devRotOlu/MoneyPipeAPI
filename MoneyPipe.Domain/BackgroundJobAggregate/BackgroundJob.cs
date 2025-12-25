@@ -1,17 +1,17 @@
+using System.Text.Json;
 using MoneyPipe.Domain.BackgroundJobAggregate.ValueObjects;
 using MoneyPipe.Domain.Common.Models;
-using MoneyPipe.Domain.InvoiceAggregate.ValueObjects;
 
 namespace MoneyPipe.Domain.BackgroundJobAggregate
 {
     public class BackgroundJob:AggregateRoot<BackgroundJobId>
     {
         public string Type { get; private set; } = null!;
-        public InvoiceId InvoiceId { get; private set; } = null!;
         public bool IsCompleted { get; private set; } = false;
         public int Attempts { get; private set; } = 0;
         public DateTime CreatedAt { get; private set; }
-        public DateTime UpdatedAt { get; private set; }
+        public DateTime UpdatedAt { get; private set; }        
+        public JsonDocument? Payload {get; private set;} 
 
         private BackgroundJob(BackgroundJobId id):base(id)
         {
@@ -23,12 +23,11 @@ namespace MoneyPipe.Domain.BackgroundJobAggregate
             
         }
 
-        public static BackgroundJob Create(string type,InvoiceId invoiceId)
+        public static BackgroundJob Create(string type)
         {
             return new(BackgroundJobId.CreateUnique(Guid.NewGuid()))
             {
                 Type = type,
-                InvoiceId = invoiceId,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -40,6 +39,8 @@ namespace MoneyPipe.Domain.BackgroundJobAggregate
             Attempts = ++Attempts;
             UpdatedAt = DateTime.UtcNow;
         }
+
+        public void AddPayload(JsonDocument payload)=> Payload = payload;
     }
 
 }

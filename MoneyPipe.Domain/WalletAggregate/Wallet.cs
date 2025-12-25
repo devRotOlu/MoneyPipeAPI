@@ -31,11 +31,11 @@ namespace MoneyPipe.Domain.WalletAggregate
         public IReadOnlyList<VirtualAccount> VirtualAccounts => _virtualAccounts.AsReadOnly();
         public IReadOnlyList<VirtualCard> VirtualCards => _virtualCards.AsReadOnly();
 
-        internal static ErrorOr<Wallet> Create(UserId userId,string currency)
+        internal static ErrorOr<Wallet> Create(WalletId walletId, UserId userId,string currency)
         {
             if (string.IsNullOrEmpty(currency)) return Errors.Wallet.MissingCurrencyError;
 
-            return new Wallet(WalletId.CreateUnique(Guid.NewGuid()))
+            return new Wallet(walletId)
             {
                 UserId = userId,
                 Currency = currency

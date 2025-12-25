@@ -15,8 +15,8 @@ namespace MoneyPipe.Infrastructure.Persistence.Repositories.Writes
         public async Task CreateBackgroundJobAsync(BackgroundJob job)
         {
             var sql = @$"
-            INSERT INTO {_tableName} (id, type, invoiceid, iscompleted , createdat, updatedat,attempts)
-            VALUES (@Id, @Type, @InvoiceId, @IsCompleted ,@CreatedAt, @UpdatedAt,@Attempts);
+            INSERT INTO {_tableName} (id, type, payload, iscompleted , createdat, updatedat,attempts)
+            VALUES (@Id, @Type, @Payload, @IsCompleted ,@CreatedAt, @UpdatedAt,@Attempts);
             ";
             await _dbConnection.ExecuteAsync(sql,job,_transaction);
         }
