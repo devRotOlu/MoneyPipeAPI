@@ -7,7 +7,7 @@ using MoneyPipe.Domain.WalletAggregate.ValueObjects;
 using MoneyPipe.Infrastructure.Services.Models;
 using MoneyPipe.Infrastructure.Services.Models.Response;
 
-namespace MoneyPipe.Infrastructure.Services
+namespace MoneyPipe.Infrastructure.Services.VirtualAccount
 {
    public class PaystackVirtualAccountProvisioner(IOptions<PaystackOptions> options,IHttpClientFactory httpClientFactory):
    IVirtualAccountProvisioner

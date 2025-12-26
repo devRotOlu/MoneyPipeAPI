@@ -163,7 +163,7 @@ namespace MoneyPipe.Domain.InvoiceAggregate
             return Result.Success;
         }
 
-        public void SetUserId(Guid userId) => UserId = UserId.CreateUnique(userId);
+        public void SetUserId(Guid userId) => UserId = UserId.CreateUnique(userId).Value;
 
         private void RecalculateTotals()
         {

@@ -31,7 +31,7 @@ namespace MoneyPipe.Domain.UserAggregate
         public PasswordResetToken? PasswordResetToken {get;private set;}
         public RefreshToken? RefreshToken {get;private set;}
 
-        public static ErrorOr<User> Create(UserRegisterData data)
+        public static ErrorOr<User> Create(UserRegisterData data,UserId userId)
         {
             var errors = new List<Error>();
 
@@ -42,7 +42,7 @@ namespace MoneyPipe.Domain.UserAggregate
 
             if (errors.Count > 0) return errors;
             
-            var user = new User(UserId.CreateUnique())
+            var user = new User(userId)
             {
                 FirstName = data.FirstName,
                 LastName = data.LastName,
@@ -83,7 +83,8 @@ namespace MoneyPipe.Domain.UserAggregate
 
             if (result.IsError) return result.Errors;
 
-            PasswordResetToken = PasswordResetToken.Create(token, DateTime.UtcNow.AddHours(24),Id);
+            var resetToken = PasswordRefreshTokenId.CreateUnique(Guid.NewGuid()).Value;
+            PasswordResetToken = PasswordResetToken.Create(token, DateTime.UtcNow.AddHours(24),Id,resetToken);
 
             return Result.Success;
         }
@@ -115,7 +116,8 @@ namespace MoneyPipe.Domain.UserAggregate
             ErrorOr<Success> result = ValidateRefreshToken(token);
             if (result.IsError) return result.Errors;
             var tokenExpirationTime = DateTime.UtcNow.AddHours(1);
-            RefreshToken = RefreshToken.Create(token, tokenExpirationTime,Id);
+            var refreshToken = RefreshTokenId.CreateUnique(Guid.NewGuid()).Value;
+            RefreshToken = RefreshToken.Create(token, tokenExpirationTime,Id,refreshToken);
             return tokenExpirationTime;
         }
 

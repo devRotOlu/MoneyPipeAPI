@@ -1,6 +1,6 @@
 using MoneyPipe.Domain.EmailJobAggregate.ValueObjects;
 
-namespace MoneyPipe.Infrastructure.TypeHandlers.IdTypeHandlers
+namespace MoneyPipe.Infrastructure.Database.TypeHandlers.IdTypeHandlers
 {
     public sealed class EmailJobIdTypeHandler : EntityIdTypeHandler<EmailJobId, Guid>
     {

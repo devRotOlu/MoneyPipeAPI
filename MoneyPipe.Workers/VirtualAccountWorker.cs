@@ -1,13 +1,11 @@
-using System.Text.Json;
-using MoneyPipe.Application;
 using MoneyPipe.Application.Common;
 using MoneyPipe.Application.Interfaces;
 using MoneyPipe.Application.Interfaces.Persistence.Reads;
 using MoneyPipe.Application.Models;
+using MoneyPipe.Application.Services;
 using MoneyPipe.Domain.BackgroundJobAggregate;
 using MoneyPipe.Domain.WalletAggregate.Model;
 using MoneyPipe.Domain.WalletAggregate.ValueObjects;
-using MoneyPipe.Infrastructure.Persistence.Repositories.Reads;
 
 namespace MoneyPipe.Workers
 {
@@ -43,11 +41,9 @@ namespace MoneyPipe.Workers
             {
                 try
                 {
-                    var paylod = job.Payload;
+                    var payload = job.Payload;
 
-                    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                    options.Converters.Add(new WalletIdConverter());
-                    var accountJob = JsonSerializer.Deserialize<AccountJobPayload>(paylod!,options);
+                    var accountJob = AccountJobPayload.Deserialize(payload!);
 
                     var accountIdResult = VirtualAccountId.CreateUnique(Guid.NewGuid());
                     var accountId = accountIdResult.Value;
@@ -68,12 +64,12 @@ namespace MoneyPipe.Workers
                     }
 
                     var virtualAccountData = new VirtualAccountData(response.BankName,response.AccountId,
-                    response.Currency,response.ProviderName,response.AccountNumber,accountId);
+                    response.Currency,response.ProviderName,response.AccountNumber);
                 
                     using var scope = _serviceProvider.CreateScope();
                     var walletRepo = scope.ServiceProvider.GetRequiredService<IWalletReadRepository>();     
                     var wallet = await walletRepo.GetWallet(walletIdResult.Value);
-                    var result = wallet!.AddVirtualAccount(virtualAccountData);
+                    var result = wallet!.AddVirtualAccount(virtualAccountData,accountId);
                     if (result.IsError)
                     {
                         Console.WriteLine("");

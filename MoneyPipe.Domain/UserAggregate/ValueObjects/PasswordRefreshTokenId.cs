@@ -2,24 +2,11 @@ using MoneyPipe.Domain.Common.Models;
 
 namespace MoneyPipe.Domain.UserAggregate.ValueObjects
 {
-    public sealed class PasswordRefreshTokenId: ValueObject
+    public sealed class PasswordRefreshTokenId : BaseId<PasswordRefreshTokenId>
     {
-        public Guid Value { get;}
-
-        private PasswordRefreshTokenId(Guid value)
+        public PasswordRefreshTokenId()
         {
-            Value = value;
-        }
-
-        internal static PasswordRefreshTokenId CreateUnique(Guid id)
-        {
-            return new(id);
-        }
-
-        protected override IEnumerable<object> GetEqualityComponents()
-        {
-            yield return Value;
         }
     }
-        
+
 }

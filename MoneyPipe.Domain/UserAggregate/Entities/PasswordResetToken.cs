@@ -13,9 +13,9 @@ namespace MoneyPipe.Domain.UserAggregate.Entities
         
         public bool IsUsed { get; private set; } 
 
-        internal static PasswordResetToken Create(string token, DateTime expiresAt,UserId userId)
+        internal static PasswordResetToken Create(string token, DateTime expiresAt,UserId userId,PasswordRefreshTokenId id)
         {
-            return new(PasswordRefreshTokenId.CreateUnique(Guid.NewGuid()))
+            return new(id)
             {
                 Token = token,
                 ExpiresAt = expiresAt,

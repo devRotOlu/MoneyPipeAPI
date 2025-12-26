@@ -1,8 +1,9 @@
 using MoneyPipe.Application.Enum;
+using MoneyPipe.Application.Interfaces.IServices;
 using MoneyPipe.Application.Models;
 using MoneyPipe.Domain.WalletAggregate.ValueObjects;
 
-namespace MoneyPipe.Application.Interfaces.IServices
+namespace MoneyPipe.Application.Services
 {
     public abstract class VirtualAccountProcessor:IVirtualAccountProcessor
     {

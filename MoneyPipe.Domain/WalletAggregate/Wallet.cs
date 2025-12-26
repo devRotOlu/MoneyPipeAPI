@@ -22,14 +22,17 @@ namespace MoneyPipe.Domain.WalletAggregate
 
         public UserId UserId { get; private set; }
         public string Currency { get; private set; } = null!;
-        public decimal Balance { get; private set; } = 0;
+        public decimal AvailableBalance { get; private set; } = 0;
+        public decimal PendingBalance {get;private set;} = 0;
         public bool IsActive {get; private set;} = true;
         public DateTime CreatedAt { get;private set; } =  DateTime.UtcNow;
         public DateTime UpdatedAt { get;private set; } =  DateTime.UtcNow;
         private readonly List<VirtualAccount> _virtualAccounts = [];
         private readonly List<VirtualCard> _virtualCards = [];
+        private readonly List<Transaction> _transactions = [];
         public IReadOnlyList<VirtualAccount> VirtualAccounts => _virtualAccounts.AsReadOnly();
         public IReadOnlyList<VirtualCard> VirtualCards => _virtualCards.AsReadOnly();
+        public IReadOnlyList<Transaction> Transactions => _transactions.AsReadOnly();
 
         internal static ErrorOr<Wallet> Create(WalletId walletId, UserId userId,string currency)
         {
@@ -45,22 +48,22 @@ namespace MoneyPipe.Domain.WalletAggregate
         public ErrorOr<Success> Credit(decimal amount)
         {
             if (amount <= 0) return Errors.Wallet.InvalidCreditAmountError;
-            Balance += amount;
+            AvailableBalance += amount;
             UpdatedAt = DateTime.UtcNow;
             return Result.Success;
         }
 
         public ErrorOr<Success> Debit(decimal amount)
         {
-            if (amount > Balance) return Errors.Wallet.InsufficientFundsError;
-            Balance -= amount;
+            if (amount > AvailableBalance) return Errors.Wallet.InsufficientFundsError;
+            AvailableBalance -= amount;
             UpdatedAt = DateTime.UtcNow;
             return Result.Success;
         }
 
-        public ErrorOr<Success> AddVirtualAccount(VirtualAccountData data)
+        public ErrorOr<Success> AddVirtualAccount(VirtualAccountData data,VirtualAccountId id)
         {
-            var result = VirtualAccount.Create(data,Id);
+            var result = VirtualAccount.Create(data,Id,id);
             if (result.IsError) return result.Errors;
 
             _virtualAccounts.Add(result.Value);
@@ -70,7 +73,7 @@ namespace MoneyPipe.Domain.WalletAggregate
         public ErrorOr<Success> AddVirtualCard(VirtualCardData data)
         {
             // card limit must not be more than its wallet balance
-            if (data.Limit > Balance) return Errors.Wallet.VirtualCardLimitExceededError;
+            if (data.Limit > AvailableBalance) return Errors.Wallet.VirtualCardLimitExceededError;
 
             var result = VirtualCard.Create(data,Id);
 

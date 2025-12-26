@@ -4,6 +4,7 @@ using MoneyPipe.Application.Interfaces.Persistence.Reads;
 using MoneyPipe.Domain.NotificationAggregate;
 using MoneyPipe.Domain.UserAggregate;
 using MoneyPipe.Domain.UserAggregate.Entities;
+using MoneyPipe.Domain.UserAggregate.ValueObjects;
 
 namespace MoneyPipe.Infrastructure.Persistence.Repositories.Reads
 {
@@ -15,7 +16,7 @@ namespace MoneyPipe.Infrastructure.Persistence.Repositories.Reads
         private readonly string _resetTokenTable = "PasswordResetTokens";
         private readonly string _notificationTable = "Notifications";
 
-        public async Task<IEnumerable<Notification>> GetUnreadNotificationsByUserIdAsync(Guid userId)
+        public async Task<IEnumerable<Notification>> GetUnreadNotificationsByUserIdAsync(UserId userId)
         {
 
             var sql = @$"
@@ -41,14 +42,15 @@ namespace MoneyPipe.Infrastructure.Persistence.Repositories.Reads
             return await _dbConnection.QueryAsync<Notification>(sql, new { UserId = userId });
         }
 
-        public async Task<PasswordResetToken?> GetPasswordResetTokenAsync(string token,Guid userId)
+        public async Task<PasswordResetToken?> GetPasswordResetTokenAsync(string token,UserId userId)
         {
             var sql = @$"
             SELECT token, expiresat, isused, createdat
             FROM {_resetTokenTable}
-            WHERE token = @Token";
+            WHERE token = @Token AND userid = @UserId";
 
-            return await _dbConnection.QueryFirstOrDefaultAsync<PasswordResetToken>(sql, new { Token = token });
+            return await _dbConnection.QueryFirstOrDefaultAsync<PasswordResetToken>(sql, 
+            new { Token = token,UserId = userId });
         }
 
         public async Task<RefreshToken?> GetRefreshTokenByTokenAsync(string token)
@@ -70,7 +72,7 @@ namespace MoneyPipe.Infrastructure.Persistence.Repositories.Reads
             return await _dbConnection.QueryFirstOrDefaultAsync<User>(sql, new { Email = email });
         }
 
-        public async Task<User?> GetUserByIdAsync(Guid id)
+        public async Task<User?> GetUserByIdAsync(UserId id)
         {
             var sql = @$"SELECT id, email, passwordHash, firstName, lastName,
                       emailConfirmed, defaultCurrency, emailConfirmed, emailConfirmationToken,

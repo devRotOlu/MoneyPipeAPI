@@ -23,7 +23,7 @@ namespace MoneyPipe.Application.Services.Wallet.Commands.CreateWallet
         {
             var _userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var userId = UserId.CreateUnique(Guid.Parse(_userId));
+            var userId = UserId.CreateUnique(Guid.Parse(_userId)).Value;
 
             var wallets = await _walletQuery.GetWallets(userId);
 

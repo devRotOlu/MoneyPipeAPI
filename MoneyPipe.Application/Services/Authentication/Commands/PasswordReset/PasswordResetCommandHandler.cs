@@ -4,6 +4,7 @@ using MoneyPipe.Application.Interfaces;
 using MoneyPipe.Application.Interfaces.Persistence.Reads;
 using MoneyPipe.Domain.Common.Errors;
 using MoneyPipe.Domain.UserAggregate;
+using MoneyPipe.Domain.UserAggregate.ValueObjects;
 
 namespace MoneyPipe.Application.Services.Authentication.Commands.PasswordReset
 {
@@ -13,12 +14,15 @@ namespace MoneyPipe.Application.Services.Authentication.Commands.PasswordReset
         private readonly IUserReadRepository _userQuery = userQuery;
         public async Task<ErrorOr<Success>> Handle(PasswordResetCommand request, CancellationToken cancellationToken)
         {
+            var userIdResult = UserId.CreateUnique(request.UserId);
 
-            User? user = await _userQuery.GetUserByIdAsync(request.UserId);
+            if (userIdResult.IsError) return userIdResult.Errors;
+
+            User? user = await _userQuery.GetUserByIdAsync(userIdResult.Value);
 
             if (user is null) return Errors.User.NotFound;
 
-            var tokenObj = await _userQuery.GetPasswordResetTokenAsync(request.Token,request.UserId);
+            var tokenObj = await _userQuery.GetPasswordResetTokenAsync(request.Token,userIdResult.Value);
 
             if (tokenObj is null) return Errors.PasswordResetToken.InvalidToken;
             if (tokenObj.ExpiresAt.CompareTo(DateTime.UtcNow) <= 0 || tokenObj.IsUsed) return Errors.PasswordResetToken.Expired;

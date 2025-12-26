@@ -35,7 +35,7 @@ namespace MoneyPipe.Application.Services.Authentication.Commands.RefreshToken
             if (stored is null || stored.RevokedAt != null || stored.ExpiresAt.CompareTo(DateTime.UtcNow) <= 0)
                 return Errors.RefreshToken.InvalidToken;
 
-            var user = await _userQuery.GetUserByIdAsync(stored.UserId.Value);
+            var user = await _userQuery.GetUserByIdAsync(stored.UserId);
             user!.RevokeRefreshToken(stored);
 
             // rotate refresh token: revoke old, create new

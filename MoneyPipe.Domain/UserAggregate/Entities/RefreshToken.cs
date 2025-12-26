@@ -14,9 +14,9 @@ namespace MoneyPipe.Domain.UserAggregate.Entities
         private RefreshToken(){}
 
         public DateTime? RevokedAt { get; private set; } 
-        internal static RefreshToken Create(string token, DateTime expiresAt,UserId userId)
+        internal static RefreshToken Create(string token, DateTime expiresAt,UserId userId,RefreshTokenId id)
         {
-            return new(RefreshTokenId.CreateUnique(Guid.NewGuid()))
+            return new(id)
             {
                 Token = token,
                 ExpiresAt = expiresAt,

@@ -3,7 +3,7 @@ using Dapper;
 using Npgsql;
 using System.Data;
 using System.Text.Json;
-namespace MoneyPipe.Infrastructure.TypeHandlers
+namespace MoneyPipe.Infrastructure.Database.TypeHandlers
 {
     public class JsonDocumentHandler : SqlMapper.TypeHandler<JsonDocument>
     {

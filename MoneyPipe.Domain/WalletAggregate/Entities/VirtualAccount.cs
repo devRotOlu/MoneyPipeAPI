@@ -28,7 +28,7 @@ namespace MoneyPipe.Domain.WalletAggregate.Entities
             
         }
 
-        public static ErrorOr<VirtualAccount> Create(VirtualAccountData data,WalletId walletId)
+        public static ErrorOr<VirtualAccount> Create(VirtualAccountData data,WalletId walletId,VirtualAccountId id)
         {
             List<Error> errors = [];
 
@@ -38,7 +38,7 @@ namespace MoneyPipe.Domain.WalletAggregate.Entities
 
             if (errors.Count != 0) return errors;
 
-            return new VirtualAccount(data.Id)
+            return new VirtualAccount(id)
             {
                 WalletId = walletId,
                 BankName = data.BankName,

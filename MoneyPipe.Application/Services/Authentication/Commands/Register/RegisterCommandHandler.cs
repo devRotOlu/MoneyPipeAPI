@@ -10,6 +10,7 @@ using MoneyPipe.Application.Interfaces.Persistence.Reads;
 using MoneyPipe.Domain.Common.Errors;
 using MoneyPipe.Domain.UserAggregate;
 using MoneyPipe.Domain.UserAggregate.Models;
+using MoneyPipe.Domain.UserAggregate.ValueObjects;
 
 
 namespace MoneyPipe.Application.Services.Authentication.Commands.Register
@@ -46,7 +47,8 @@ namespace MoneyPipe.Application.Services.Authentication.Commands.Register
             userData.PasswordHash = hashedPassword;
             userData.EmailConfirmationToken = _tokenService.GenerateEmailConfirmationToken();
 
-            var result = User.Create(userData);
+            var userId = UserId.CreateUnique(Guid.NewGuid()).Value;
+            var result = User.Create(userData,userId);
             if (result.IsError) return result.Errors;
 
             var user = result.Value;

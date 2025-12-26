@@ -21,7 +21,7 @@ namespace MoneyPipe.Application.Services.Authentication.Commands.Logout
             _tokenService.InvalidateTokenInCookies(_httpContextAccessor.HttpContext);
             var storedToken = await _userQuery.GetRefreshTokenByTokenAsync(refreshToken);
 
-            var user = await _userQuery.GetUserByIdAsync(storedToken!.UserId.Value);
+            var user = await _userQuery.GetUserByIdAsync(storedToken!.UserId);
             user!.RevokeRefreshToken(storedToken);
 
             await _unitofWork.Users.RevokeRefreshTokenAsync(user);

@@ -2,7 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MoneyPipe.Application.Enum;
 using MoneyPipe.Application.Interfaces.IServices;
 
-namespace MoneyPipe.Infrastructure.Services
+namespace MoneyPipe.Infrastructure.Services.VirtualAccount
 {
     public class VirtualAccountProvisionerFactory(IServiceScopeFactory scopeFactory) : IVirtualAccountProvisionerFactory
     {

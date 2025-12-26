@@ -1,4 +1,3 @@
-using System.Text.Json;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using MoneyPipe.Application.Common;
@@ -23,10 +22,7 @@ namespace MoneyPipe.Application.Services.Authentication.EventHandlers.UserRegist
             var wallet = result.Value;
 
             var accountJobPayload = new AccountJobPayload(email,"NGN",wallet.Id);
-
-            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            options.Converters.Add(new WalletIdConverter());
-            var payload = JsonDocument.Parse(JsonSerializer.Serialize(accountJobPayload,options));
+            var payload = accountJobPayload.Serialize();
             
             var backgroundJob = BackgroundJob.Create(JobTypes.CreateVirtualAccount);
             backgroundJob.AddPayload(payload);

@@ -4,6 +4,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using MoneyPipe.API.Common.Http;
 using MoneyPipe.API.DTOs.Responses;
+using MoneyPipe.Application.Services.Wallet.Commands.AddVirtualAccount;
 using MoneyPipe.Application.Services.Wallet.Commands.CreateWallet;
 
 namespace MoneyPipe.API.Controllers
@@ -27,7 +28,19 @@ namespace MoneyPipe.API.Controllers
                     var dto = _mapper.Map<GetWalletDTO>(wallet);
                     return Ok(ApiResponse<GetWalletDTO>.Ok(dto,"Wallet Created!"));
                 },
-                error=> Problem(error)
+                Problem
+            );
+        }
+
+        [HttpPost("add-virtual-account")]
+        public async Task<IActionResult> AddVirtualAccount([FromQuery] Guid walletId,[FromQuery] string currency)
+        {
+            var command = new AddVirtualAccountCommand(walletId,currency);
+            ErrorOr<Success> result = await _mediatr.Send(command);
+
+            return result.Match(
+                success => Ok(ApiResponse<object>.Ok(null,"Virtual being processed. You'd receive notification.")),
+                Problem
             );
         }
     }

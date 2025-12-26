@@ -9,7 +9,7 @@ namespace MoneyPipe.Domain.Common.Errors
             public static Error InvalidId(object providedValue) =>
                 Error.Validation(
                     code: "IdCreation.InvalidId",
-                    description: $"Invalid Id value for {providedValue}"
+                    description: $"Invalid {providedValue}"
                 );
         
         }

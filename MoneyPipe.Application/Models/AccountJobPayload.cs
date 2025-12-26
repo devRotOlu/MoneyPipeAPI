@@ -1,3 +1,4 @@
+using System.Text.Json;
 using MoneyPipe.Domain.WalletAggregate.ValueObjects;
 
 namespace MoneyPipe.Application.Models
@@ -14,5 +15,19 @@ namespace MoneyPipe.Application.Models
         public string UserEmail {get;}
         public string Currency {get;}
         public WalletId WalletId {get;}
+
+        public JsonDocument Serialize()
+        {
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            options.Converters.Add(new WalletIdConverter());
+            return JsonDocument.Parse(JsonSerializer.Serialize(this,options));
+        }
+
+        public static AccountJobPayload? Deserialize(JsonDocument payload)
+        {
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            options.Converters.Add(new WalletIdConverter());
+            return JsonSerializer.Deserialize<AccountJobPayload>(payload,options);
+        }
     };
 }

@@ -37,11 +37,15 @@ namespace MoneyPipe.Domain.SupportTicketAggregate
 
             if (ticket.Description is null) errors.Add(Errors.SupportTicket.DescriptionRequired);
 
+            var userIdResult = UserId.CreateUnique(ticket.UserId);
+
+            if (userIdResult.IsError) errors.AddRange(userIdResult.Errors);
+
             if (errors.Count != 0) return errors;
 
             return new SupportTicket(SupportTicketId.CreateUnique())
             {
-                UserId = UserId.CreateUnique(ticket.UserId),
+                UserId = userIdResult.Value,
                 Subject = ticket.Subject,
                 Description = ticket.Description!,
                 CreatedAt = DateTime.UtcNow

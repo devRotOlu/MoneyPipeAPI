@@ -4,6 +4,7 @@ using MoneyPipe.Application.Interfaces;
 using MoneyPipe.Application.Interfaces.Persistence.Reads;
 using MoneyPipe.Domain.Common.Errors;
 using MoneyPipe.Domain.UserAggregate;
+using MoneyPipe.Domain.UserAggregate.ValueObjects;
 
 namespace MoneyPipe.Application.Services.Authentication.Commands.ConfirmUser
 {
@@ -14,7 +15,11 @@ namespace MoneyPipe.Application.Services.Authentication.Commands.ConfirmUser
 
         public async Task<ErrorOr<Success>> Handle(ConfirmUserCommand request, CancellationToken cancellationToken)
         {
-            User? user = await _userQuery.GetUserByIdAsync(request.UserId);
+            var userIdResult = UserId.CreateUnique(request.UserId);
+
+            if (userIdResult.IsError) return userIdResult.Errors;
+
+            User? user = await _userQuery.GetUserByIdAsync(userIdResult.Value);
 
             if (user is null) return Errors.User.NotFound;
             if (user.EmailConfirmationExpiry?.CompareTo(DateTime.UtcNow) < 0) return Errors.EmailConfirmation.TokenExpired;

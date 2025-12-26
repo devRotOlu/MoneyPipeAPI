@@ -6,7 +6,7 @@ using MoneyPipe.Application.Interfaces.IServices;
 using MoneyPipe.Application.Models;
 using MoneyPipe.Domain.WalletAggregate.ValueObjects;
 
-namespace MoneyPipe.Infrastructure.Services
+namespace MoneyPipe.Infrastructure.Services.VirtualAccount
 {
     public class FlutterWaveVirtualAccountProvisioner:IVirtualAccountProvisioner
     {

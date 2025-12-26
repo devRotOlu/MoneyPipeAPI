@@ -1,6 +1,6 @@
 using MoneyPipe.Domain.BackgroundJobAggregate.ValueObjects;
 
-namespace MoneyPipe.Infrastructure.TypeHandlers.IdTypeHandlers
+namespace MoneyPipe.Infrastructure.Database.TypeHandlers.IdTypeHandlers
 {
     public sealed class BackgroundJobIdTypeHandler : EntityIdTypeHandler<BackgroundJobId, Guid>
     {

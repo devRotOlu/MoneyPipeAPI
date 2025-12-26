@@ -1,7 +1,7 @@
 using MoneyPipe.Application.Enum;
 using MoneyPipe.Application.Interfaces.IServices;
 
-namespace MoneyPipe.Application
+namespace MoneyPipe.Application.Services
 {
     public sealed class VirtualAccountProcessorResolver
     {
