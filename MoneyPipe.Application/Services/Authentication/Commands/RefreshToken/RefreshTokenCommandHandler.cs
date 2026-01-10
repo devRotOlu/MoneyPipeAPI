@@ -35,11 +35,17 @@ namespace MoneyPipe.Application.Services.Authentication.Commands.RefreshToken
             if (stored is null || stored.RevokedAt != null || stored.ExpiresAt.CompareTo(DateTime.UtcNow) <= 0)
                 return Errors.RefreshToken.InvalidToken;
 
+            // rotate refresh token: revoke old, create new
+            
             var user = await _userQuery.GetUserByIdAsync(stored.UserId);
             user!.RevokeRefreshToken(stored);
 
-            // rotate refresh token: revoke old, create new
+            var newRefreshToken = _tokenService.GetRefreshToken();
+            var expirationTimeResult = user.AddRefreshToken(newRefreshToken);
+            _tokenService.SetTokenInCookies(user,newRefreshToken,expirationTimeResult.Value,_httpContextAccessor.HttpContext);
+
             await _unitOfWork.Users.RevokeRefreshTokenAsync(user);
+            await _unitOfWork.Users.AddRefreshTokenAsync(user);
             await _unitOfWork.Commit();
 
             var authResult = _mapper.Map<AuthenticationResult>(user);

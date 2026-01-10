@@ -11,11 +11,11 @@ namespace MoneyPipe.Domain.WalletAggregate.Entities
     {
         public WalletId WalletId { get; private set; } 
         public string CardNumber { get; private set; } 
-        public DateOnly ExpiryDate {get; private set;}
+        public CardExpiryDate CardExpiryDate {get; private set;}
         public string CVC {get;private set;}
         public string Status { get; private set; } = CardStatus.Active.ToString();
         public string Currency {get; private set;} 
-        public decimal? Limit {get; private set;}
+        public decimal? CardLimit {get; private set;}
         public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; private set; } = DateTime.UtcNow;
 
@@ -33,8 +33,10 @@ namespace MoneyPipe.Domain.WalletAggregate.Entities
         {
             List<Error> errors = [];
 
-            if (DateOnly.FromDateTime(DateTime.UtcNow).CompareTo(data.ExpiryDate) <= 0)
-                errors.Add(Errors.VirtualCard.InvalidExpiryDate);
+            var expiryDateResult = CardExpiryDate.Create(data.ExpiryMonth,data.ExpiryYear);
+
+            if (expiryDateResult.IsError)
+                errors.AddRange(expiryDateResult.Errors);
             
             if (!IsValidCardNumber(data.CardNumber))
                 errors.Add(Errors.VirtualCard.InvalidCardNumber);
@@ -48,23 +50,23 @@ namespace MoneyPipe.Domain.WalletAggregate.Entities
             return new VirtualCard(VirtualCardId.CreateUnique(Guid.NewGuid()))
             {
                 CardNumber = data.CardNumber,
-                Limit = data.Limit,
+                CardLimit = data.Limit,
                 CVC = data.CVC,
                 Currency = data.Currency,
-                ExpiryDate = data.ExpiryDate,
+                CardExpiryDate = expiryDateResult.Value,
                 WalletId = walletId
             };
         }
 
         internal void SetCardLimit(decimal limit)
         {
-            Limit = limit;
+            CardLimit = limit;
             UpdatedAt = DateTime.UtcNow;
         }
 
         internal void RemoveCardLimit()
         {
-            Limit = null;
+            CardLimit = null;
             UpdatedAt = DateTime.UtcNow;
         }
 

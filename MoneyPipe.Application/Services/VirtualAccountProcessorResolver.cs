@@ -1,4 +1,4 @@
-using MoneyPipe.Application.Enum;
+using MoneyPipe.Application.Enums;
 using MoneyPipe.Application.Interfaces.IServices;
 
 namespace MoneyPipe.Application.Services
@@ -8,7 +8,7 @@ namespace MoneyPipe.Application.Services
         public VirtualAccountProcessorResolver(IEnumerable<IVirtualAccountProcessor> processors)
         {
             Processors = processors.ToDictionary(p => p.Method);
-            ProviderCapabilityRegistry.Add("NGN",VirtualAccountMethod.FlutterWave);
+            ProviderCapabilityRegistry.Add("NGN",VirtualAccountMethod.Korapay);
         }
         private Dictionary<VirtualAccountMethod,IVirtualAccountProcessor> Processors {get;}
 

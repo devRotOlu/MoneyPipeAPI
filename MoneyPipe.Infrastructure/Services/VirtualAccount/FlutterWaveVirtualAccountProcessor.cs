@@ -1,4 +1,4 @@
-using MoneyPipe.Application.Enum;
+using MoneyPipe.Application.Enums;
 using MoneyPipe.Application.Interfaces.IServices;
 using MoneyPipe.Application.Services;
 

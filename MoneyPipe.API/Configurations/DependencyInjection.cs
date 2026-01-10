@@ -151,9 +151,12 @@ namespace MoneyPipe.API.Configurations
                       new List<string>()
                      }
                 });
+                
 
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "MoneyPipeAPI", Version = "v1" });
+
             });
+            services.AddSwaggerGenNewtonsoftSupport();
         }
     }
 }

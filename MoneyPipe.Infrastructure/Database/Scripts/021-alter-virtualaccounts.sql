@@ -1,0 +1,2 @@
+ALTER TABLE VirtualAccounts
+ALTER COLUMN AccountName TYPE TEXT;

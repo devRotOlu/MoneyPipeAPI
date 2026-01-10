@@ -29,6 +29,7 @@ namespace MoneyPipe.Domain.WalletAggregate.Entities
         public string Type {get;private set;} = null!; 
         public string ProviderName {get; private set;} = null!; // provider reference
         public string ProviderReference {get; private set;} = null!;
+        public bool IsVerified {get; private set;} = false;
         public TransactionId? RelatedTransactionId {get; private set;} 
 
         internal static ErrorOr<Transaction> Create(TransactionData data,TransactionId id)

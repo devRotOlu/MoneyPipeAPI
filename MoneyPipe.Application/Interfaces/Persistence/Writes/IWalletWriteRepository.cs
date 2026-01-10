@@ -6,5 +6,6 @@ namespace MoneyPipe.Application.Interfaces.Persistence.Writes
     {
         Task CreateWallet(Wallet wallet);
         Task AddVirtualAccount(Wallet wallet);
+        Task AddVirtualCard(Wallet wallet, CancellationToken ct);
     }
 }

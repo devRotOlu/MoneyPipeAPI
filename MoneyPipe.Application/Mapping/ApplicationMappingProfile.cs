@@ -4,7 +4,8 @@ using MoneyPipe.Application.Services.Authentication.Common;
 using MoneyPipe.Application.Services.Invoicing.Commands.CreateInvoice;
 using MoneyPipe.Application.Services.Invoicing.Commands.EditInvoice;
 using MoneyPipe.Application.Services.Invoicing.Common;
-using MoneyPipe.Application.Services.Wallet.Commands.CreateWallet;
+using MoneyPipe.Application.Services.KYCManagement.Commands.CompleteProfile;
+using MoneyPipe.Application.Services.WalletManagement.Commands.CreateWallet;
 using MoneyPipe.Domain.InvoiceAggregate;
 using MoneyPipe.Domain.InvoiceAggregate.Entities;
 using MoneyPipe.Domain.InvoiceAggregate.Models;
@@ -44,6 +45,7 @@ namespace MoneyPipe.Application.Mapping
                 .ConvertUsing(src => src.Value);
             CreateMap<Wallet,WalletResult>()
                 .ForMember(dest=>dest.Id,opt=>opt.MapFrom(src=>src.Id.Value));
+            CreateMap<CompleteProfileCommand,KYCData>();
         }
     }
 }

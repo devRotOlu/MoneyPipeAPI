@@ -11,5 +11,7 @@ namespace MoneyPipe.Application.Interfaces.Persistence.Writes
         Task AddPasswordResetTokenAsync(User user);
         Task UpdateUserPassword(User user);
         Task MarkPasswordResetTokenAsUsedAsync(User user);
+        Task AddKycProfileAsync(User user);
+        Task AddKycDocumentAsync(User user);
     }
 }

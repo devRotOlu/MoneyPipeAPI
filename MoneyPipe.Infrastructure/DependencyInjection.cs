@@ -6,9 +6,11 @@ using MoneyPipe.Application.Interfaces;
 using MoneyPipe.Application.Interfaces.IServices;
 using MoneyPipe.Application.Interfaces.Persistence.Reads;
 using MoneyPipe.Infrastructure.Database.TypeHandlers;
-using MoneyPipe.Infrastructure.Database.TypeHandlers.IdTypeHandlers;
 using MoneyPipe.Infrastructure.Persistence;
 using MoneyPipe.Infrastructure.Persistence.Repositories.Reads;
+using MoneyPipe.Infrastructure.Services;
+using MoneyPipe.Infrastructure.Services.Models;
+using MoneyPipe.Infrastructure.Services.PaymentCreation;
 using MoneyPipe.Infrastructure.Services.VirtualAccount;
 using MoneyPipe.Infrastructure.Storage;
 using Npgsql;
@@ -31,12 +33,21 @@ namespace MoneyPipe.Infrastructure
             services.AddScoped<IWalletReadRepository,WalletReadRepository>();
             services.AddScoped<IBackgroundJobReadRepository,BackgroundJobReadRepository>();
             services.AddSingleton<ICloudinaryService,CloudinaryService>();
-            services.AddScoped<IBackgroundJobQueue, BackgroundJobQueue>();
             services.AddScoped<IVirtualAccountProcessor,PaystackVirtualAccountProcessor>();
             services.AddScoped<IVirtualAccountProcessor,FlutterwaveVirtualAccountProcessor>();
-            services.AddScoped<PaystackVirtualAccountProvisioner>();
-            services.AddScoped<FlutterWaveVirtualAccountProvisioner>();
+            services.AddScoped<IVirtualAccountProcessor,MonnifyVirtualAccountProcessor>();
+            services.AddScoped<IVirtualAccountProcessor,KorapayVirtualAccountProcessor>();
+            services.AddScoped<IPaymentCreationProcessor,FlutterWavePaymentCreationProcessor>();
+            services.AddScoped<Paystack>();
+            services.AddScoped<Services.FlutterWave>();
+            services.AddScoped<Monnify>();
+            services.AddScoped<Korapay>();
             services.AddSingleton<IVirtualAccountProvisionerFactory,VirtualAccountProvisionerFactory>();
+            services.AddSingleton<IPaymentCreationProvisonerFactory,PaymentCreationProvisionerFactory>();
+
+            services.Configure<FlutterWaveOptions>(configuration.GetSection("Flutterwave"));
+            services.Configure<MonnifyOptions>(configuration.GetSection("Monnify"));
+            services.Configure<KorapayOptions>(configuration.GetSection("Korapay"));
             
             services.AddHttpClient();
             services.RegisterAllEntityIdTypeHandlers();
@@ -76,7 +87,7 @@ namespace MoneyPipe.Infrastructure
 
             if (!result.Successful)
             {
-
+                Console.WriteLine(result.Error);
             }
 
             return services;
@@ -89,7 +100,7 @@ namespace MoneyPipe.Infrastructure
                 .Where(t => !t.IsAbstract &&
                             t.BaseType != null &&
                             t.BaseType.IsGenericType &&
-                            t.BaseType.GetGenericTypeDefinition() == typeof(EntityIdTypeHandler<,>))
+                            t.BaseType.GetGenericTypeDefinition() == typeof(BaseTypeHandler<,>))
                 .ToList();
 
             // Find the generic AddTypeHandler<T>(ITypeHandler) method once

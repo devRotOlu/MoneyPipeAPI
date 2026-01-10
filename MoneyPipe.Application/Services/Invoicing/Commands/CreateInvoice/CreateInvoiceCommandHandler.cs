@@ -8,6 +8,7 @@ using MoneyPipe.Application.Interfaces.Persistence.Reads;
 using MoneyPipe.Application.Services.Invoicing.Common;
 using MoneyPipe.Domain.InvoiceAggregate;
 using MoneyPipe.Domain.InvoiceAggregate.Models;
+using MoneyPipe.Domain.InvoiceAggregate.ValueObjects;
 
 
 namespace MoneyPipe.Application.Services.Invoicing.Commands.CreateInvoice
@@ -27,7 +28,8 @@ namespace MoneyPipe.Application.Services.Invoicing.Commands.CreateInvoice
             var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var invoiceData = _mapper.Map<InvoiceData>(request);
-            ErrorOr<Invoice> invoicingResult = Invoice.Create(invoiceData);
+            var invoiceId = InvoiceId.CreateUnique(Guid.NewGuid()).Value;
+            ErrorOr<Invoice> invoicingResult = Invoice.Create(invoiceData,invoiceId);
             if (invoicingResult.IsError) return invoicingResult.Errors;
             
             var invoice = invoicingResult.Value;

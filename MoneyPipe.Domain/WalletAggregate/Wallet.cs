@@ -63,11 +63,20 @@ namespace MoneyPipe.Domain.WalletAggregate
 
         public ErrorOr<Success> AddVirtualAccount(VirtualAccountData data,VirtualAccountId id)
         {
-            var result = VirtualAccount.Create(data,Id,id);
+            var isPrimaryAccount = _virtualAccounts.Any(account=>!account.IsPrimaryForInvoice); 
+            var result = VirtualAccount.Create(data,Id,id,isPrimaryAccount);
             if (result.IsError) return result.Errors;
 
             _virtualAccounts.Add(result.Value);
             return Result.Success;
+        }
+
+        public void ChangePrimaryAccount(VirtualAccountId newPrimaryAccountId)
+        {
+            var oldPrimaryAccount = _virtualAccounts.Find(account=> account.IsPrimaryForInvoice);
+            oldPrimaryAccount!.ChangeAsPrimaryAccount();
+            var newPrimaryAccount = _virtualAccounts.Find(account=> account.Id == newPrimaryAccountId);
+            newPrimaryAccount?.ChangeAsPrimaryAccount();
         }
 
         public ErrorOr<Success> AddVirtualCard(VirtualCardData data)
@@ -89,5 +98,17 @@ namespace MoneyPipe.Domain.WalletAggregate
             IsActive = false;
             UpdatedAt = DateTime.UtcNow;
         }
+
+        /// <summary>
+        /// Infrastructure-only method for rehydrating invoice items from persistence.
+        /// Do not use in business logic.
+        /// </summary>
+        public void AddVirtualAccounts(IEnumerable<VirtualAccount> virtualAccounts)=> _virtualAccounts.AddRange(virtualAccounts);
+
+        /// <summary>
+        /// Infrastructure-only method for rehydrating invoice items from persistence.
+        /// Do not use in business logic.
+        /// </summary>
+        public void AddVirtualCards(IEnumerable<VirtualCard> virtualCards)=> _virtualCards.AddRange(virtualCards);
     }
 }

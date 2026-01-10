@@ -1,4 +1,4 @@
-using MoneyPipe.Application.Enum;
+using MoneyPipe.Application.Enums;
 using MoneyPipe.Application.Interfaces.IServices;
 using MoneyPipe.Application.Models;
 using MoneyPipe.Domain.WalletAggregate.ValueObjects;
@@ -13,7 +13,7 @@ namespace MoneyPipe.Application.Services
         public async Task<VirtualAccountResponse> ProcessVirtualAccount(VirtualAccountId virtualAccountId, string email)
         {
             var accountProvisioner = CreateVirtualAccount();
-            var response = await accountProvisioner.CreateAsync(virtualAccountId, email);
+            var response = await accountProvisioner.CreateVirtualAccountAsync(virtualAccountId, email);
             return response;
         } 
 

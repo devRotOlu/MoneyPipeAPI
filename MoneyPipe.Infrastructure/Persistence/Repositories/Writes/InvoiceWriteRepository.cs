@@ -21,11 +21,10 @@ namespace MoneyPipe.Infrastructure.Persistence.Repositories.Writes
         {
             var invoiceSql = @$"
             INSERT INTO {_invoiceTable}
-            (id, userid, invoicenumber, subtotal, taxamount, totalamount, currency, status,
-             duedate, customername, customeremail, customeraddress, notes,
-              paymenturl, createdat)VALUES
+            (id, userid, invoicenumber, subtotal, taxamount, totalamount, currency, status, 
+            createdat)VALUES
             (@Id, @UserId, @InvoiceNumber, @SubTotal, @TaxAmount, @TotalAmount, @Currency, @Status,
-             @DueDate, @CustomerName, @CustomerEmail, @CustomerAddress, @Notes, @PaymentUrl,@CreatedAt);";
+             @DueDate, @CustomerName, @CustomerEmail, @CustomerAddress, @Notes,@CreatedAt);";
             await _dbConnection.ExecuteAsync(invoiceSql,invoice,_transaction);
 
             foreach (var item in invoice.InvoiceItems)
@@ -41,21 +40,13 @@ namespace MoneyPipe.Infrastructure.Persistence.Repositories.Writes
         {
             var invoiceSql = @$" 
                     UPDATE {_invoiceTable} SET
-                    subtotal = @SubTotal,
-                    taxamount = @TaxAmount,
-                    totalamount = @TotalAmount,
-                    currency = @Currency,
-                    status = @Status,
-                    duedate = @DueDate,
-                    issuedate = @IssueDate,
-                    paidat = @PaidAt,
-                    customername = @CustomerName,
-                    customeremail = @CustomerEmail,
-                    customeraddress = @CustomerAddress,
-                    notes = @Notes,
-                    paymenturl = @PaymentUrl,
-                    updatedat = @UpdatedAt,
-                    pdflink = @PDFLink
+                    subtotal = @SubTotal, taxamount = @TaxAmount, totalamount = @TotalAmount,
+                    currency = @Currency, status = @Status,duedate = @DueDate, 
+                    issuedate = @IssueDate,paidat = @PaidAt, customername = @CustomerName,
+                    customeremail = @CustomerEmail, customeraddress = @CustomerAddress,
+                    notes = @Notes, paymenturl = @PaymentUrl, updatedat = @UpdatedAt,
+                    pdflink = @PDFLink, paymentmethod = @PaymentMethod,
+                    paymentreference = @PaymentReference,paymentprovider = @PaymentProvider
                 WHERE id = @Id;";
             await _dbConnection.ExecuteAsync(invoiceSql,invoice,_transaction);
 

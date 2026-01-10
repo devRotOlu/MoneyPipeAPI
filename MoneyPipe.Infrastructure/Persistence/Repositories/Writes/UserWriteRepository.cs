@@ -5,13 +5,16 @@ using MoneyPipe.Domain.UserAggregate;
 
 namespace MoneyPipe.Infrastructure.Persistence.Repositories.Writes
 {
-    public class UserWriteRepository(IDbConnection dbConnection,IDbTransaction transaction) : IUserWriteRepository
+    public class UserWriteRepository(IDbConnection dbConnection,IDbTransaction transaction) 
+    : IUserWriteRepository
     {
         private readonly IDbConnection _dbConnection = dbConnection;
         private readonly IDbTransaction _transaction = transaction;
         private readonly string _userTable = "Users";
         private readonly string _refreshTokenTable = "RefreshTokens";
         private readonly string _resetTokenTable = "PasswordResetTokens";
+        private readonly string _kycProfileTable = "KycProfiles";
+        private readonly string _kycDocumentTable = "KycDocuments";
 
         public async Task CreateUserAsync(User user)
         {
@@ -75,7 +78,28 @@ namespace MoneyPipe.Infrastructure.Persistence.Repositories.Writes
                 SET revokedat = @RevokedAt
                 WHERE token = @Token AND userid = @UserId;
             ";
-            await _dbConnection.ExecuteAsync(sql,user.RefreshToken,_transaction);
+            await _dbConnection.ExecuteAsync(sql,user.OldRefreshToken,_transaction);
+        }
+
+        public async Task AddKycProfileAsync(User user)
+        {
+            var sql = @$"INSERT INTO {_kycProfileTable} (id, userid,phonenumber, 
+            street, city, state, country, postalcode, status) 
+            VALUES (@Id, @UserId,@PhoneNumber, @Street, @City, @State,
+            @Country, @PostalCode, @Status)";
+            var parameters = new DynamicParameters(user.KYCProfile);
+            parameters.AddDynamicParams(user.KYCProfile.Address);
+            await _dbConnection.ExecuteAsync(sql,parameters, _transaction);
+        }
+
+        public async Task AddKycDocumentAsync(User user)
+        {
+            var sql = @$"INSERT INTO {_kycDocumentTable} (id, kycprofileid,category 
+            type, value, isverified, issuer) 
+            VALUES (@Id, @KYCProfileId,@Category, @Type, @Value, @IsVerified,
+            @Issuer)";
+            await _dbConnection.ExecuteAsync(sql, user.KYCProfile.NewKYCDocument,
+             _transaction);
         }
     }
 }

@@ -70,9 +70,9 @@ namespace MoneyPipe.API.Controllers
         } 
 
         [HttpPost("send-invoice")]
-        public async Task<IActionResult> SendInvoice([FromQuery] Guid invoiceId)
+        public async Task<IActionResult> SendInvoice(SendInvoiceDTO dto)
         {
-            var command = new SendInvoiceCommand(invoiceId);
+            var command = _mapper.Map<SendInvoiceCommand>(dto);
             ErrorOr<Success> result = await _mediatr.Send(command);
             return result.Match(
                 success => Ok(ApiResponse<object>.Ok(null,"Invoice Sent")),

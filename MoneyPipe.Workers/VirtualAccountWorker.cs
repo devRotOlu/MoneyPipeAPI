@@ -4,7 +4,7 @@ using MoneyPipe.Application.Interfaces.Persistence.Reads;
 using MoneyPipe.Application.Models;
 using MoneyPipe.Application.Services;
 using MoneyPipe.Domain.BackgroundJobAggregate;
-using MoneyPipe.Domain.WalletAggregate.Model;
+using MoneyPipe.Domain.WalletAggregate.Model; 
 using MoneyPipe.Domain.WalletAggregate.ValueObjects;
 
 namespace MoneyPipe.Workers
@@ -56,24 +56,15 @@ namespace MoneyPipe.Workers
                         response = await processor.ProcessVirtualAccount(accountId,accountJob.UserEmail);
                     }
                     
-
-                    var walletIdResult = WalletId.CreateUnique(accountJob.WalletId.Value);
-                    if (walletIdResult.IsError)
-                    {
-                        Console.WriteLine("");
-                    }
+                    var walletId = WalletId.CreateUnique(accountJob.WalletId.Value).Value;
 
                     var virtualAccountData = new VirtualAccountData(response.BankName,response.AccountId,
                     response.Currency,response.ProviderName,response.AccountNumber);
                 
                     using var scope = _serviceProvider.CreateScope();
                     var walletRepo = scope.ServiceProvider.GetRequiredService<IWalletReadRepository>();     
-                    var wallet = await walletRepo.GetWallet(walletIdResult.Value);
+                    var wallet = await walletRepo.GetWallet(walletId);
                     var result = wallet!.AddVirtualAccount(virtualAccountData,accountId);
-                    if (result.IsError)
-                    {
-                        Console.WriteLine("");
-                    }
 
                     var unitofWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
                     await unitofWork.Wallets.AddVirtualAccount(wallet);
@@ -84,7 +75,8 @@ namespace MoneyPipe.Workers
                 }
                 catch(Exception ey) 
                 {
-                    Console.WriteLine(ey.Message);                
+                    Console.WriteLine(ey.Message); 
+                    Console.WriteLine(ey.InnerException);               
                     try
                     {
                         using var scope = _serviceProvider.CreateScope();

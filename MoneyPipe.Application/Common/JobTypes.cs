@@ -4,5 +4,6 @@ namespace MoneyPipe.Application.Common
     {
         public static string SendInvoice => "SendInvoice";
         public static string CreateVirtualAccount => "CreateVirtualAccount";
+        public static string CreateVirtualCard => "CreateVirtualCard";
     }
 }

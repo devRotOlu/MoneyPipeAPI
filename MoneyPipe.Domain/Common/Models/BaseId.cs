@@ -6,7 +6,8 @@ namespace MoneyPipe.Domain.Common.Models
     {
         public static ErrorOr<TId> CreateUnique(Guid id)
         {
-            if (Guid.Empty == id) return Errors.Errors.IdCreation.InvalidId(nameof(TId));
+            if (Guid.Empty == id) 
+                return Errors.Errors.IdCreation.InvalidId(nameof(TId));
             
             var instance = new TId(); 
             instance.Initialize(id);

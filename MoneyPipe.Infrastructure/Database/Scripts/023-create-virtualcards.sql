@@ -1,0 +1,13 @@
+CREATE TABLE VirtualCards (
+    Id UUID PRIMARY KEY,
+    WalletId UUID NOT NULL REFERENCES Wallets(Id) ON DELETE CASCADE,
+    CardNumber VARCHAR(19) NOT NULL,
+    ExpiryMonth INT NOT NULL CHECK (ExpiryMonth BETWEEN 1 AND 12),
+    ExpiryYear INT NOT NULL,
+    CVC VARCHAR(4) NOT NULL,
+    Status VARCHAR(15) NOT NULL,
+    Currency CHAR(3) NOT NULL,
+    CardLimit NUMERIC(18,4) DEFAULT 0 CHECK (CardLimit >= 0),
+    CreatedAt TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UpdatedAt TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);

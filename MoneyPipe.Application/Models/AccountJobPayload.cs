@@ -1,4 +1,5 @@
 using System.Text.Json;
+using MoneyPipe.Application.TypeJsonConverters;
 using MoneyPipe.Domain.WalletAggregate.ValueObjects;
 
 namespace MoneyPipe.Application.Models

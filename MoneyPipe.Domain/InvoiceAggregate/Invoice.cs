@@ -29,8 +29,11 @@ namespace MoneyPipe.Domain.InvoiceAggregate
         public string CustomerEmail { get; private set; } = null!;
         public string? CustomerAddress { get; private set; } 
         public string? Notes { get; private set; }
+        public string? PaymentMethod {get; private set;}
+        public string? PaymentReference {get; private set;}
+        public string? PaymentProvider {get; private set;}
         public string? PaymentUrl { get; private set; }
-        public string? PDFLink {get;set;}
+        public string? PDFLink {get; private set;}
         public IReadOnlyCollection<InvoiceItem> InvoiceItems => _invoiceItems.AsReadOnly(); 
 
         private Invoice(){}
@@ -40,9 +43,9 @@ namespace MoneyPipe.Domain.InvoiceAggregate
             
         }
 
-        public static ErrorOr<Invoice> Create(InvoiceData data)
+        public static ErrorOr<Invoice> Create(InvoiceData data, InvoiceId id)
         {
-            var invoice = new Invoice(InvoiceId.CreateUnique(Guid.NewGuid()))
+            var invoice = new Invoice(id)
             {
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
@@ -86,7 +89,7 @@ namespace MoneyPipe.Domain.InvoiceAggregate
 
             if (string.IsNullOrWhiteSpace(data.CustomerEmail)) errors.Add(Errors.Invoice.InvalidCustomerEmail);
 
-            var invoice = new Invoice(InvoiceId.CreateUnique(data.Id))
+            var invoice = new Invoice(InvoiceId.CreateUnique(data.Id).Value)
             {
                 UpdatedAt = DateTime.UtcNow
             };
@@ -141,9 +144,10 @@ namespace MoneyPipe.Domain.InvoiceAggregate
             UpdatedAt = DateTime.UtcNow;
         }
 
-        public void MarkSent()
+        public void MarkSent(PaymentMethod method)
         {
             Status = InvoiceStatus.Sent.ToString();
+            PaymentMethod = method.ToString();
             UpdatedAt = DateTime.UtcNow;
             IssueDate = DateTime.UtcNow;
         }
@@ -175,5 +179,15 @@ namespace MoneyPipe.Domain.InvoiceAggregate
         public void SetInvoiceNumber(int serialNumber) => InvoiceNumber = $"INV-{serialNumber:D6}";
 
         public void SetPDFLink(string url)=> PDFLink = url;
+
+        public void AddPaymentDetails(PaymentMethod method,string provider,string? paymentUrl)
+        {
+            PaymentMethod = method.ToString();
+            PaymentProvider = provider;
+            if (method == Enums.PaymentMethod.Card) AddPaymentUrl(paymentUrl!);
+        }
+
+        public void AddPaymentReference()=> PaymentReference = $"{InvoiceNumber}-{Guid.NewGuid()}";
+        private void AddPaymentUrl(string url)=> PaymentUrl = url;
     }
 }

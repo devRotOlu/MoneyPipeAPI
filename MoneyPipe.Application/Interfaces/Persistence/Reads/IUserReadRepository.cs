@@ -12,5 +12,6 @@ namespace MoneyPipe.Application.Interfaces.Persistence.Reads
         Task<User?> GetUserByIdAsync(UserId id);
         Task<PasswordResetToken?> GetPasswordResetTokenAsync(string token,UserId userId);
         Task<IEnumerable<Notification>> GetUnreadNotificationsByUserIdAsync(UserId userId);
+        Task<User?> GetUserProfileAsync(UserId userId);
     }
 }

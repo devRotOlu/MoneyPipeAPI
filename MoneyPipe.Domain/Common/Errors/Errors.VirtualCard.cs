@@ -10,6 +10,7 @@ namespace MoneyPipe.Domain.Common.Errors
             public static Error InvalidCardNumber => Error.Validation("VirtualCard.InvalidCardNumber","Card number is required.");
             public static Error InvalidCurrency => Error.Validation("VirtualCard.InvalidCurrency","Currency is required.");
             public static Error InvalidExpiryDate => Error.Validation("VirtualCard.InvalidExpiryDate","Provide a valid expiry date.");
+            public static Error InValidCardLimit => Error.Validation("VirtualCard");
             
         }
     }

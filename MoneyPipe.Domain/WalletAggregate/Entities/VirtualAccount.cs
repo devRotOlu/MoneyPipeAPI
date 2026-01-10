@@ -17,6 +17,7 @@ namespace MoneyPipe.Domain.WalletAggregate.Entities
         public DateTime CreatedAt {get; private set;} = DateTime.UtcNow;
         public DateTime UpdatedAt {get; private set;} = DateTime.UtcNow;
         public string Currency {get;private set;}
+        public bool IsPrimaryForInvoice {get; private set;} 
 
         private VirtualAccount(VirtualAccountId id):base(id)
         {
@@ -28,7 +29,8 @@ namespace MoneyPipe.Domain.WalletAggregate.Entities
             
         }
 
-        public static ErrorOr<VirtualAccount> Create(VirtualAccountData data,WalletId walletId,VirtualAccountId id)
+        public static ErrorOr<VirtualAccount> Create(VirtualAccountData data,WalletId walletId,
+        VirtualAccountId id, bool isPrimaryAccount)
         {
             List<Error> errors = [];
 
@@ -45,14 +47,17 @@ namespace MoneyPipe.Domain.WalletAggregate.Entities
                 AccountName = data.AccountName,
                 Currency = data.Currency,
                 ProviderAccountId = data.ProviderAccountId,
-                ProviderName = data.ProviderName
+                ProviderName = data.ProviderName,
+                IsPrimaryForInvoice = isPrimaryAccount
             };
         } 
 
-        public void Deactivate()
+        internal void Deactivate()
         {
             IsActive = false;
             UpdatedAt = DateTime.UtcNow;
         }
+
+        internal void ChangeAsPrimaryAccount()=> IsPrimaryForInvoice = !IsPrimaryForInvoice;
     }
 }

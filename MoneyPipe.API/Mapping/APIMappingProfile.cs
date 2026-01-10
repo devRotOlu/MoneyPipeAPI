@@ -7,9 +7,14 @@ using MoneyPipe.Application.Services.Authentication.Commands.Register;
 using MoneyPipe.Application.Services.Authentication.Common;
 using MoneyPipe.Application.Services.Invoicing.Commands.CreateInvoice;
 using MoneyPipe.Application.Services.Invoicing.Commands.EditInvoice;
+using MoneyPipe.Application.Services.Invoicing.Commands.SendInvoice;
 using MoneyPipe.Application.Services.Invoicing.Common;
 using MoneyPipe.Application.Services.Invoicing.Queries.GetInvoices;
-using MoneyPipe.Application.Services.Wallet.Commands.CreateWallet;
+using MoneyPipe.Application.Services.KYCManagement.Commands.AddDocument;
+using MoneyPipe.Application.Services.KYCManagement.Commands.CompleteProfile;
+using MoneyPipe.Application.Services.KYCManagement.Common;
+using MoneyPipe.Application.Services.KYCManagement.Queries.GetKycStatus;
+using MoneyPipe.Application.Services.WalletManagement.Commands.CreateWallet;
 
 namespace MoneyPipe.API.Mapping
 {
@@ -30,6 +35,11 @@ namespace MoneyPipe.API.Mapping
             CreateMap<GetInvoicesResult,GetInvoicesDTO>();
             CreateMap<InvoiceResult,GetInvoiceBase>();
             CreateMap<WalletResult,GetWalletDTO>();
+            CreateMap<SendInvoiceDTO,SendInvoiceCommand>();
+            CreateMap<CompleteProfileDTO,CompleteProfileCommand>();
+            CreateMap<BaseDocumentDTO,BaseDocumentCommand>();
+            CreateMap<AddDocumentDTO,AddDocumentCommand>();
+            CreateMap<GetKycSatusResult,GetKycStatusDTO>();
         }
     }
 }

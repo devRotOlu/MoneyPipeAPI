@@ -5,6 +5,6 @@ namespace MoneyPipe.Application.Interfaces.IServices
 {
     public interface IVirtualAccountProvisioner
     {
-        Task<VirtualAccountResponse> CreateAsync(VirtualAccountId virtualAccountId, string email);
+        Task<VirtualAccountResponse> CreateVirtualAccountAsync(VirtualAccountId virtualAccountId, string email);
     }
 }

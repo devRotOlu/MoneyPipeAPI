@@ -2,6 +2,7 @@ using ErrorOr;
 using MoneyPipe.Domain.Common.Errors;
 using MoneyPipe.Domain.Common.Models;
 using MoneyPipe.Domain.UserAggregate.Entities;
+using MoneyPipe.Domain.UserAggregate.Enums;
 using MoneyPipe.Domain.UserAggregate.Events;
 using MoneyPipe.Domain.UserAggregate.Models;
 using MoneyPipe.Domain.UserAggregate.ValueObjects;
@@ -30,6 +31,8 @@ namespace MoneyPipe.Domain.UserAggregate
 
         public PasswordResetToken? PasswordResetToken {get;private set;}
         public RefreshToken? RefreshToken {get;private set;}
+        public RefreshToken? OldRefreshToken {get; private set;}
+        public KYCProfile KYCProfile {get; private set;}
 
         public static ErrorOr<User> Create(UserRegisterData data,UserId userId)
         {
@@ -132,8 +135,40 @@ namespace MoneyPipe.Domain.UserAggregate
 
         public void RevokeRefreshToken(RefreshToken tokenObj)
         {
-            RefreshToken = tokenObj;
-            RefreshToken.MarkAsRevoked();
+            OldRefreshToken = tokenObj;
+            OldRefreshToken.MarkAsRevoked();
         }
+
+        public ErrorOr<Success> AddKYCProfile(KYCData data)
+        {
+            var profileResult = KYCProfile.Create(data,Id);
+            if (profileResult.IsError) return profileResult.Errors;
+            KYCProfile = profileResult.Value;
+            return Result.Success;
+        }
+
+        public ErrorOr<Success> AddKYCProfileDocument(IdentityCategory category,string type,string value,string issuer)
+        {
+            var documentResult = KYCProfile.AddDocument(category,type,value,issuer);
+            if (documentResult.IsError) return documentResult.Errors;
+            return Result.Success;
+        }
+
+        public ErrorOr<Success> ChangeKYCProfileStatus(KYCStatus status,string? rejectionReason)
+        {
+            var statusResult = KYCProfile.ChangeStatus(status,rejectionReason);
+            if (statusResult.IsError)
+                return statusResult.Errors;
+            return Result.Success;
+        }
+
+        public void VerifyKYCProfileDocument(KYCDocumentId id) => 
+            KYCProfile.VerifyDocument(id);
+
+        /// <summary>
+        /// Infrastructure-only method for rehydrating invoice items from persistence.
+        /// Do not use in business logic.
+        /// </summary>
+        public void AddKYCProfile(KYCProfile profile)=> KYCProfile = profile;
     }
 }
